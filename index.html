@@ -2,155 +2,98 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Noor’s College Board — v4.4 (Mobile Optimized)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noor’s College Board — v5.0 (Firebase Sync)</title>
 <meta name="theme-color" content="#faf7fb">
 <style>
-  :root{
-    /* Pink, Green & Purple Illustration palette (same vibe as v4.3) */
-    --bg: #faf7fb; --ink: #1e1231; --muted: #615e76; --panel: #ffffff; --border: #eadff1;
-    --shadow: 0 6px 20px rgba(30,18,49,.08);
-    --lane-bg: #ffffff; --lane-border: #eadff1;
-    --college-bg: #efe7ff; --college-border: #d7c8ff;
-    --scholar-bg: #ffe6ef; --scholar-border: #ffc2d4;
-    --tag-bg: #f5edf9; --tag-border: #eadff1;
-    --accent-pink: #ff6fa3; --accent-green: #2ec4a6; --accent-purple: #7b61ff;
-    --soon: #ffb020; --urgent: #ff6b6b;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; color:var(--ink);
-    font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro", "Segoe UI", Roboto, Helvetica, Arial;
-    background: var(--bg);
-    -webkit-tap-highlight-color: transparent;
-  }
-  a{color:var(--accent-purple); text-decoration:none}
-  header{
-    position:sticky; top:0; z-index:20;
-    background: var(--panel);
-    border-bottom:1px solid var(--border);
-  }
-  .wrap{max-width:1220px; margin:0 auto; padding:14px 16px}
-  .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
-  .brand{display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:.2px}
-  .logo{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
-        background: linear-gradient(135deg, var(--accent-purple), #b39dff); color:#fff; font-weight:900; box-shadow:var(--shadow)}
-  nav{display:flex; gap:8px; flex-wrap:wrap}
-  .tab{appearance:none; border:1px solid var(--border); background:var(--panel); color:var(--ink);
-       padding:12px 14px; border-radius:12px; cursor:pointer; font-weight:700; box-shadow:var(--shadow); min-height:44px}
-  .tab.active{border-color: transparent; background:linear-gradient(#ffffff, #f7f2fb)}
+  :root{--bg:#faf7fb;--ink:#1e1231;--muted:#615e76;--panel:#fff;--border:#eadff1;--shadow:0 6px 20px rgba(30,18,49,.08);
+        --lane-bg:#fff;--lane-border:#eadff1;--college-bg:#efe7ff;--college-border:#d7c8ff;--scholar-bg:#ffe6ef;--scholar-border:#ffc2d4;
+        --tag-bg:#f5edf9;--tag-border:#eadff1;--accent-pink:#ff6fa3;--accent-green:#2ec4a6;--accent-purple:#7b61ff;
+        --soon:#ffb020;--urgent:#ff6b6b}
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"SF Pro","Segoe UI",Roboto,Helvetica,Arial;background:var(--bg)}
+  header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border)}
+  .wrap{max-width:1220px;margin:0 auto;padding:14px 16px}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:900}
+  .logo{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent-purple),#b39dff);color:#fff;font-weight:900;box-shadow:var(--shadow)}
+  nav{display:flex;gap:8px;flex-wrap:wrap}
+  .tab{appearance:none;border:1px solid var(--border);background:var(--panel);color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:var(--shadow)}
+  .tab.active{border-color:transparent;background:linear-gradient(#fff,#f7f2fb)}
   .spacer{flex:1}
-  .btn{appearance:none;border:1px solid var(--border);cursor:pointer;font-weight:800;border-radius:12px;padding:12px 16px; background:#fff; color:var(--ink); box-shadow:var(--shadow); min-height:44px}
-  .btn.primary{border-color: transparent; background: linear-gradient(135deg, var(--accent-purple), #b39dff); color:#fff}
-  .btn.green{border-color: transparent; background: linear-gradient(135deg, var(--accent-green), #8be3d3); color:#0e2d29}
-  .btn.pink{border-color: transparent; background: linear-gradient(135deg, var(--accent-pink), #ffb3cd); color:#5b0d27}
-  main .wrap{padding:18px 16px}
-  .muted{color:var(--muted)}
-  .hidden{display:none !important}
-  input, select, textarea{width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border);
-    outline:none; background:#fff; color:var(--ink); font-size:16px; /* prevent iOS zoom */ }
-  input:focus, select:focus, textarea:focus{border-color: var(--accent-purple)}
-
-  /* Board */
-  .bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px}
-  .bar .btn{padding:10px 12px}
-  .kanban{display:grid; grid-template-columns: repeat(5, 1fr); gap:16px; align-items:flex-start}
-  .lane{background: var(--lane-bg);
-        border:1px solid var(--lane-border); border-radius:14px; padding:12px; min-height:220px; box-shadow: var(--shadow)}
-  .lane h3{margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
-  .lane .count{font-weight:900; color:var(--accent-purple)}
-  .dropzone{min-height:160px}
-  .card{border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; box-shadow: var(--shadow); cursor:grab}
-  .card.college{background: var(--college-bg); border-color: var(--college-border);}
-  .card.scholar{background: var(--scholar-bg); border-color: var(--scholar-border);}
-  .card.dragging{opacity:.7}
-  .title{font-weight:900; font-size:16px}
-  .rowtiny{display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-top:6px}
-  .tag{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--tag-border); background: var(--tag-bg); color:var(--muted)}
-  .dueSoon{border-color: var(--soon); color: var(--soon); background:#fff7eb}
-  .dueUrgent{border-color: var(--urgent); color: var(--urgent); background:#fff1f1}
-  .no-drag{cursor:pointer}
-
-  /* Mobile move control: visible on small screens; hidden on desktop */
-  .move-wrap{margin-top:8px}
-  .move-select{display:none}
-  @media (max-width: 760px){
-    .kanban{grid-template-columns: 1fr 1fr}
-    .move-select{display:block}
-  }
-  @media (max-width: 560px){
-    .kanban{grid-template-columns: 1fr}
-  }
-
-  /* Table */
-  table{width:100%; border-collapse:collapse; font-size:14px; background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:var(--shadow)}
-  th, td{padding:12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top}
-  thead th{color:var(--muted); font-weight:800; user-select:none; cursor:pointer; background:#f9f4fc}
+  .btn{appearance:none;border:1px solid var(--border);cursor:pointer;font-weight:800;border-radius:10px;padding:10px 14px;background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--accent-purple),#b39dff);color:#fff}
+  .btn.green{border-color:transparent;background:linear-gradient(135deg,var(--accent-green),#8be3d3);color:#0e2d29}
+  .btn.pink{border-color:transparent;background:linear-gradient(135deg,var(--accent-pink),#ffb3cd);color:#5b0d27}
+  main .wrap{padding:18px 16px}.muted{color:var(--muted)}.hidden{display:none!important}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);outline:none;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent-purple)}
+  .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;align-items:flex-start}
+  .lane{background:var(--lane-bg);border:1px solid var(--lane-border);border-radius:14px;padding:12px;min-height:220px;box-shadow:var(--shadow)}
+  .lane h3{margin:0 0 8px 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .lane .count{font-weight:900;color:var(--accent-purple)}.dropzone{min-height:160px}
+  .card{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:var(--shadow);cursor:grab}
+  .card.college{background:var(--college-bg);border-color:var(--college-border)}.card.scholar{background:var(--scholar-bg);border-color:var(--scholar-border)}
+  .card.dragging{opacity:.7}.title{font-weight:900}
+  .rowtiny{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+  .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--tag-border);background:var(--tag-bg);color:var(--muted)}
+  .dueSoon{border-color:var(--soon);color:var(--soon);background:#fff7eb}.dueUrgent{border-color:var(--urgent);color:var(--urgent);background:#fff1f1}
+  table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+  thead th{color:var(--muted);font-weight:800;user-select:none;cursor:pointer;background:#f9f4fc}
   tr:hover td{background:#faf7ff}
-
-  /* Modal */
-  .modal{position:fixed; inset:0; background:rgba(30,18,49,.25); display:grid; place-items:center; z-index:99; padding:16px}
-  .panel{background: #fff; border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow:var(--shadow); max-width:900px; width:100%}
-  .grid6{display:grid; gap:10px; grid-template-columns: repeat(6, 1fr)}
-  @media (max-width: 900px){ .grid6{grid-template-columns: repeat(3, 1fr)} }
-  @media (max-width: 560px){ .grid6{grid-template-columns: 1fr} }
-
-  /* Calendar */
-  .calendar{background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden}
-  .cal-head{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border)}
-  .cal-title{font-weight:900}
-  .cal-grid{display:grid; grid-template-columns: repeat(7, 1fr);}
-  .cal-dow{background:#f9f4fc; color:var(--muted); padding:10px; font-weight:800; text-align:center; border-bottom:1px solid var(--border)}
-  .cal-cell{min-height:120px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:8px; position:relative}
-  .cal-cell:nth-child(7n){border-right:0}
-  .cal-date{font-size:12px; color:var(--muted); position:absolute; top:6px; right:8px}
-  .ev{display:block; margin-top:18px; font-size:12px; border-radius:8px; padding:6px 8px; border:1px solid var(--border);}
-  .ev.college{background:#efe7ff}
-  .ev.scholar{background:#ffe6ef}
-  .agenda{display:none; border-top:1px solid var(--border); padding:10px 16px}
-  .agenda-item{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); font-size:14px}
-  .agenda-item:last-child{border-bottom:0}
-  .agenda .when{min-width:90px; color:var(--muted)}
-
-  @media (max-width: 760px){
-    .cal-cell{min-height:90px}
-    .agenda{display:block}
-  }
+  .modal{position:fixed;inset:0;background:rgba(30,18,49,.25);display:grid;place-items:center;z-index:99}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);max-width:900px;width:92vw}
+  .grid6{display:grid;gap:10px;grid-template-columns:repeat(6,1fr)}
+  @media (max-width:1100px){.kanban{grid-template-columns:repeat(3,1fr)}.grid6{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:760px){.kanban{grid-template-columns:1fr}nav{overflow:auto}.grid6{grid-template-columns:1fr}}
+  .auth{display:flex;gap:8px;align-items:center}
+  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap row">
-    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· Colleges & Scholarships</span></div>
+    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· v5.0 Firebase Sync</span></div>
     <nav id="tabs" class="spacer">
       <button class="tab active" data-tab="board">Board</button>
       <button class="tab" data-tab="table">Table</button>
       <button class="tab" data-tab="calendar">Calendar</button>
       <button class="tab" data-tab="notes">Notes</button>
     </nav>
-    <button id="exportBtn" class="btn">Export</button>
-    <input type="file" id="importFile" class="hidden" accept="application/json">
-    <button id="importBtn" class="btn primary">Import</button>
-    <button id="seedBtn" class="btn green">Load Sample Data</button>
+    <div class="auth">
+      <span id="userBadge" class="pill hidden"></span>
+      <button id="loginBtn" class="btn primary">Sign in with Google</button>
+      <button id="logoutBtn" class="btn hidden">Sign out</button>
+    </div>
   </div>
 </header>
 
 <main>
-  <!-- BOARD -->
+  <section class="wrap">
+    <div class="row muted" style="gap:16px;align-items:flex-start">
+      <div class="pill">Cloud sync: <b id="syncState">offline</b></div>
+      <div id="firstSyncNote" class="hidden">First sign-in will ask if you want to <b>upload</b> your current data to the cloud or <b>pull</b> existing cloud data down.</div>
+      <div class="spacer"></div>
+      <button id="exportBtn" class="btn">Export</button>
+      <input type="file" id="importFile" class="hidden" accept="application/json">
+      <button id="importBtn" class="btn">Import</button>
+      <button id="seedBtn" class="btn green">Load Sample Data</button>
+      <button id="addCollegeBtn" class="btn primary">+ College</button>
+      <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
+    </div>
+  </section>
+
   <section id="board" class="wrap">
-    <div class="bar">
+    <div class="row" style="margin-bottom:10px">
       <input id="filterBoard" placeholder="Filter… e.g., Duke, Common, Flinn, VFW">
       <div class="spacer"></div>
       <button class="btn" onclick="openBulk('college')">Bulk Import Colleges</button>
       <button class="btn" onclick="openBulk('scholar')">Bulk Import Scholarships</button>
-      <button id="addCollegeBtn" class="btn primary">+ College</button>
-      <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
     </div>
     <div class="kanban" id="kanban"></div>
   </section>
 
-  <!-- TABLE -->
   <section id="table" class="wrap hidden">
     <div class="row" style="margin-bottom:10px">
       <input id="filterTable" placeholder="Filter…">
@@ -177,81 +120,76 @@
     </table>
   </section>
 
-  <!-- CALENDAR -->
   <section id="calendar" class="wrap hidden">
+    <div class="row" style="margin-bottom:10px">
+      <div id="calTitle" style="font-weight:900"></div>
+      <div class="spacer"></div>
+      <button class="btn" id="prevMonth">◀︎</button>
+      <button class="btn" id="todayBtn">Today</button>
+      <button class="btn" id="nextMonth">▶︎</button>
+    </div>
     <div class="calendar">
-      <div class="cal-head">
-        <div id="calTitle" class="cal-title"></div>
-        <div class="spacer"></div>
-        <div class="cal-nav">
-          <button class="btn" id="prevMonth">◀︎</button>
-          <button class="btn" id="todayBtn">Today</button>
-          <button class="btn" id="nextMonth">▶︎</button>
-        </div>
+      <div class="wrap" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0">
+        <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
       </div>
       <div class="cal-grid" id="calGrid"></div>
-      <div class="agenda" id="agendaList"></div>
     </div>
   </section>
 
-  <!-- NOTES -->
   <section id="notes" class="wrap hidden">
     <textarea id="notesArea" rows="10" placeholder="Essay ideas, prompts, to-dos…"></textarea>
     <div class="row" style="margin-top:10px">
-      <div class="muted">Autosaves to this browser.</div>
+      <div class="muted">Autosaves; now also synced when signed in.</div>
       <div class="spacer"></div>
       <button class="btn" onclick="clearNotes()">Clear</button>
     </div>
   </section>
 </main>
 
-<!-- Add/Edit College Modal -->
-<div id="editCollegeModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="collegeTitle">
+<div id="editCollegeModal" class="modal hidden">
   <div class="panel">
     <div class="row" style="margin-bottom:10px">
-      <div id="collegeTitle" style="font-weight:900">College</div>
+      <div style="font-weight:900">College</div>
       <div class="spacer"></div>
       <button class="btn" onclick="closeEdit('college')">Close</button>
       <button class="btn primary" onclick="saveEdit('college')">Save</button>
     </div>
     <div class="grid6">
-      <input id="cName" placeholder="College name" autocomplete="off">
-      <input id="cApp" placeholder="Application type (Common/UC/…)" autocomplete="off">
+      <input id="cName" placeholder="College name">
+      <input id="cApp" placeholder="Application type (Common/UC/…)">
       <input id="cEAED" type="date" placeholder="EA/ED due">
       <input id="cRD" type="date" placeholder="RD due">
-      <input id="cScholar" placeholder="Scholarship(s)" autocomplete="off">
+      <input id="cScholar" placeholder="Scholarship(s)">
       <input id="cSDue" type="date" placeholder="Scholarship due">
       <select id="cStatus">
         <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
       </select>
-      <input id="cNotes" placeholder="Notes" autocomplete="off">
+      <input id="cNotes" placeholder="Notes">
     </div>
   </div>
 </div>
 
-<!-- Add/Edit Scholarship Modal -->
-<div id="editScholarModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="scholarTitle">
+<div id="editScholarModal" class="modal hidden">
   <div class="panel">
     <div class="row" style="margin-bottom:10px">
-      <div id="scholarTitle" style="font-weight:900">Scholarship</div>
+      <div style="font-weight:900">Scholarship</div>
       <div class="spacer"></div>
       <button class="btn" onclick="closeEdit('scholar')">Close</button>
       <button class="btn primary" onclick="saveEdit('scholar')">Save</button>
     </div>
     <div class="grid6">
-      <input id="sSponsor" placeholder="Sponsor" autocomplete="off">
-      <input id="sName" placeholder="Scholarship name" autocomplete="off">
+      <input id="sSponsor" placeholder="Sponsor">
+      <input id="sName" placeholder="Scholarship name">
       <input id="sDue" type="date" placeholder="Due date">
-      <input id="sPrize" placeholder="Top prize (e.g., $25,000)" autocomplete="off">
+      <input id="sPrize" placeholder="Top prize (e.g., $25,000)">
       <select id="sStatus">
         <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
       </select>
-      <input id="sNotes" placeholder="Notes (optional)" autocomplete="off">
+      <input id="sNotes" placeholder="Notes (optional)">
     </div>
   </div>
 </div>
 
-<!-- Bulk Import Modal -->
 <div id="bulkModal" class="modal hidden">
   <div class="panel">
     <h3 style="margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)">Bulk Import</h3>
@@ -269,393 +207,251 @@ sponsor,name,due,prize,status,notes"></textarea>
   </div>
 </div>
 
-<footer class="wrap muted" style="padding:28px 16px">Built for Noor with ❤️ — data stays private (localStorage). Export backups regularly.</footer>
+<footer class="wrap muted" style="padding:28px 16px">Built for Noor with ❤️ — cloud sync when signed in; otherwise local-only.</footer>
 
-<script>
-const $=s=>document.querySelector(s);
-const $$=s=>Array.from(document.querySelectorAll(s));
-const dbKey='noor_board_v4_4';
+<script type="module">
+/*** Firebase SDK (modular) ***/
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/*** Paste your config here (Step 3) ***/
+const firebaseConfig = {
+  apiKey: "AIzaSyDHf23XSZsHW0q07iCM7PvJnOqNvPwTmYU",
+  authDomain: "noor-college-list.firebaseapp.com",
+  projectId: "noor-college-list",
+  storageBucket: "noor-college-list.firebasestorage.app",
+  messagingSenderId: "622273585541",
+  appId: "1:622273585541:web:906be9a5e20842b9be64ec",
+  measurementId: "G-7W78102QWH"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+/*** App data model (local + cloud) ***/
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const localKey='noor_board_v5_0';
+let currentUser=null, unsubscribeCloud=null, cloudDocRef=null, saveTimer=null;
 
 const model={
-  load(){return JSON.parse(localStorage.getItem(dbKey) || '{}');},
-  save(d){localStorage.setItem(dbKey, JSON.stringify(d));},
+  load(){return JSON.parse(localStorage.getItem(localKey) || '{}');},
+  save(d, pushCloud=true){
+    localStorage.setItem(localKey, JSON.stringify(d));
+    if(currentUser && pushCloud) debounceSaveCloud(d);
+  },
   init(){
     const d=model.load();
-    if(!d.seqC) d.seqC=100;
-    if(!d.seqS) d.seqS=1000;
+    if(!d.seqC) d.seqC=100; if(!d.seqS) d.seqS=1000;
     if(!Array.isArray(d.colleges)) d.colleges=seedColleges();
     if(!Array.isArray(d.scholarships)) d.scholarships=seedScholars();
     if(!d.notes) d.notes='';
     if(!d.calendar){ d.calendar={year:new Date().getFullYear(), month:new Date().getMonth()}; }
-    model.save(d);
-  },
-  reset(){
-    const d={seqC:100, seqS:1000, colleges:seedColleges(), scholarships:seedScholars(), notes:'', calendar:{year:new Date().getFullYear(), month:new Date().getMonth()}};
-    model.save(d);
+    model.save(d,false);
   },
   get(){return model.load();},
   set(d){model.save(d);}
 };
 
-function seedColleges(){
-  const names=[
-    'Duke University','Vanderbilt University','Rice University','University of Toronto','University of Notre Dame',
-    'UCLA','UC Berkeley','University of Virginia','UNC Chapel Hill','UC Santa Barbara','UC San Diego','Boston College',
-    'UT Austin','Boston University','William & Mary','Case Western Reserve','Wake Forest University','University of Washington',
-    'University of Arizona','Arizona State University','Swarthmore College','Washington and Lee University','Emory University',
-    'Georgia Tech','Carnegie Mellon University','Northwestern University','University of Chicago','Princeton University',
-    'Harvard University','Yale University','Columbia University','Cornell University','Brown University','Stanford University'
-  ];
-  return names.map((n,i)=>({id:101+i,name:n,app:'',eaed:'',rd:'',scholar:'',sdue:'',status:i<8?'Considering':(i<16?'Applying':'Considering'),notes:''}));
-}
-function seedScholars(){
-  return [
-    {id:1001, sponsor:'Flinn Foundation', name:'Flinn Scholars', due:'2025-10-01', prize:'Full ride', status:'Considering', notes:''},
-    {id:1002, sponsor:'VFW', name:'Voice of Democracy', due:'2025-10-31', prize:'$35,000', status:'Considering', notes:''},
-    {id:1003, sponsor:'Elks', name:'Most Valuable Student', due:'2025-11-12', prize:'$4k–$30k', status:'Considering', notes:''},
-    {id:1004, sponsor:'Taco Bell', name:'Live Más Scholarship', due:'2026-01-08', prize:'$25,000', status:'Considering', notes:''},
-    {id:1005, sponsor:'UCB Family', name:'Epilepsy Scholarship', due:'2025-03-15', prize:'$5k–$10k', status:'Considering', notes:''},
-    {id:1006, sponsor:'Scottsdale Charros', name:'Scottsdale Champion Scholarship', due:'2025-02-28', prize:'—', status:'Considering', notes:''},
-    {id:1007, sponsor:'Credit Union West', name:'Scholarship', due:'2025-03-31', prize:'$2,000', status:'Considering', notes:''},
-    {id:1008, sponsor:'Bryan Cameron', name:'Cameron Impact Scholarship', due:'2025-05-21', prize:'—', status:'Considering', notes:''},
-    {id:1009, sponsor:'Four Star Leadership', name:'with Gen. Tommy Franks', due:'2025-04-04', prize:'$2.5k–$5k', status:'Considering', notes:''},
-    {id:1010, sponsor:'Stossel in the Classroom', name:'Essay Contest', due:'2025-03-12', prize:'—', status:'Considering', notes:''}
-  ];
-}
+function seedColleges(){const names=['Duke University','Vanderbilt University','Rice University','University of Toronto','University of Notre Dame','UCLA','UC Berkeley','University of Virginia','UNC Chapel Hill','UC Santa Barbara','UC San Diego','Boston College','UT Austin','Boston University','William & Mary','Case Western Reserve','Wake Forest University','University of Washington','University of Arizona','Arizona State University','Swarthmore College','Washington and Lee University','Emory University','Georgia Tech','Carnegie Mellon University','Northwestern University','University of Chicago','Princeton University','Harvard University','Yale University','Columbia University','Cornell University','Brown University','Stanford University'];return names.map((n,i)=>({id:101+i,name:n,app:'',eaed:'',rd:'',scholar:'',sdue:'',status:i<8?'Considering':(i<16?'Applying':'Considering'),notes:''}))}
+function seedScholars(){return[{id:1001,sponsor:'Flinn Foundation',name:'Flinn Scholars',due:'2025-10-01',prize:'Full ride',status:'Considering',notes:''},{id:1002,sponsor:'VFW',name:'Voice of Democracy',due:'2025-10-31',prize:'$35,000',status:'Considering',notes:''},{id:1003,sponsor:'Elks',name:'Most Valuable Student',due:'2025-11-12',prize:'$4k–$30k',status:'Considering',notes:''},{id:1004,sponsor:'Taco Bell',name:'Live Más Scholarship',due:'2026-01-08',prize:'$25,000',status:'Considering',notes:''},{id:1005,sponsor:'UCB Family',name:'Epilepsy Scholarship',due:'2025-03-15',prize:'$5k–$10k',status:'Considering',notes:''},{id:1006,sponsor:'Scottsdale Charros',name:'Scottsdale Champion Scholarship',due:'2025-02-28',prize:'—',status:'Considering',notes:''},{id:1007,sponsor:'Credit Union West',name:'Scholarship',due:'2025-03-31',prize:'$2,000',status:'Considering',notes:''},{id:1008,sponsor:'Bryan Cameron',name:'Cameron Impact Scholarship',due:'2025-05-21',prize:'—',status:'Considering',notes:''},{id:1009,sponsor:'Four Star Leadership',name:'with Gen. Tommy Franks',due:'2025-04-04',prize:'$2.5k–$5k',status:'Considering',notes:''},{id:1010,sponsor:'Stossel in the Classroom',name:'Essay Contest',due:'2025-03-12',prize:'—',status:'Considering',notes:''}]}
 
 // Tabs
 $('#tabs').addEventListener('click', (e)=>{
   if(!e.target.matches('.tab')) return;
-  $$('.tab').forEach(t=>t.classList.remove('active'));
-  e.target.classList.add('active');
+  $$('.tab').forEach(t=>t.classList.remove('active')); e.target.classList.add('active');
   const tab=e.target.dataset.tab;
   ['board','table','calendar','notes'].forEach(id=>$('#'+id).classList.toggle('hidden', id!==tab));
-  if(tab==='calendar') buildCalendar();
-  if(tab==='table') renderTable();
+  if(tab==='calendar') buildCalendar(); if(tab==='table') renderTable();
 });
 
 // Export/Import
 $('#exportBtn').addEventListener('click', ()=>{
   const data=JSON.stringify(model.get(),null,2);
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
-  a.download='noor-board-v4_4.json'; a.click(); URL.revokeObjectURL(a.href);
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='noor-board-v5.json'; a.click(); URL.revokeObjectURL(a.href);
 });
 $('#importBtn').addEventListener('click', ()=>$('#importFile').click());
-$('#importFile').addEventListener('change', async(e)=>{const f=e.target.files[0]; if(!f) return; try{const text=await f.text(); const json=JSON.parse(text); model.set(json); renderAll(); alert('Imported!');}catch{alert('Invalid file.');}});
-document.getElementById('seedBtn').addEventListener('click', ()=>{ if(confirm('Replace current data with sample data?')){ model.reset(); renderAll(); }});
+$('#importFile').addEventListener('change', async(e)=>{const f=e.target.files[0]; if(!f) return; try{const text=await f.text(); const json=JSON.parse(text); model.set(json); renderAll(); if(currentUser) debounceSaveCloud(json); alert('Imported!');}catch{alert('Invalid file.');}});
+document.getElementById('seedBtn').addEventListener('click', ()=>{ if(confirm('Replace current data with sample data?')){ model.init(); renderAll(); if(currentUser) debounceSaveCloud(model.get()); }});
 
-// Utils
+// Helpers
 function fmt(d){return d? new Date(d).toLocaleDateString():'';}
 function daysLeft(d){ if(!d) return null; return Math.ceil((new Date(d)-today())/86400000); }
 function today(){const t=new Date(); t.setHours(0,0,0,0); return t; }
 function compareDates(a,b){ return (a?new Date(a).getTime():0) - (b?new Date(b).getTime():0); }
-function dueClass(d){
-  const dl=daysLeft(d);
-  if(dl==null) return '';
-  if(dl<=7) return 'dueUrgent';
-  if(dl<=21) return 'dueSoon';
-  return '';
-}
+function dueClass(d){ const dl=daysLeft(d); if(dl==null) return ''; if(dl<=7) return 'dueUrgent'; if(dl<=21) return 'dueSoon'; return ''; }
 
-// Board
 const STATUSES=['Considering','Applying','Submitted','Interview','Decision'];
+function collegeCard(r){return `<div class="card college" draggable="true" data-type="college" data-id="${r.id}"><div class="title">${r.name||''}</div><div class="rowtiny"><span class="tag">${r.app||'—'}</span></div><div class="rowtiny"><span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt(r.eaed): '—'}</span><span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt(r.rd): '—'}</span></div><div class="rowtiny"><span class="tag">Scholarship: ${r.scholar||'—'}</span><span class="tag ${dueClass(r.sdue)}">Due: ${r.sdue? fmt(r.sdue): '—'}</span></div><div class="rowtiny"><div class="spacer"></div><button class="btn" onclick="openEdit('college', ${r.id})">Edit</button><button class="btn" onclick="delRow('college', ${r.id})">Delete</button></div></div>`}
+function scholarCard(r){return `<div class="card scholar" draggable="true" data-type="scholar" data-id="${r.id}"><div class="title">${r.name||''}</div><div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span></div><div class="rowtiny"><div class="spacer"></div><button class="btn" onclick="openEdit('scholar', ${r.id})">Edit</button><button class="btn" onclick="delRow('scholar', ${r.id})">Delete</button></div></div>`}
 
-function collegeCard(r){
-  return `<div class="card college" draggable="true" data-type="college" data-id="${r.id}">
-    <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.app||'—'}</span></div>
-    <div class="rowtiny">
-      <span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt(r.eaed): '—'}</span>
-      <span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt(r.rd): '—'}</span>
-    </div>
-    <div class="rowtiny">
-      <span class="tag">Scholarship: ${r.scholar||'—'}</span>
-      <span class="tag ${dueClass(r.sdue)}">Due: ${r.sdue? fmt(r.sdue): '—'}</span>
-    </div>
-    <div class="rowtiny move-wrap">
-      <select class="move-select" onchange="moveToStatus('college', ${r.id}, this.value)">
-        ${STATUSES.map(s=>`<option ${s===(r.status||'Considering')?'selected':''}>${s}</option>`).join('')}
-      </select>
-      <div class="spacer"></div>
-      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="openEdit('college', ${r.id}); event.stopPropagation();">Edit</button>
-      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="delRow('college', ${r.id}); event.stopPropagation();">Delete</button>
-    </div>
-  </div>`;
-}
-
-function scholarCard(r){
-  return `<div class="card scholar" draggable="true" data-type="scholar" data-id="${r.id}">
-    <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span></div>
-    <div class="rowtiny move-wrap">
-      <select class="move-select" onchange="moveToStatus('scholar', ${r.id}, this.value)">
-        ${STATUSES.map(s=>`<option ${s===(r.status||'Considering')?'selected':''}>${s}</option>`).join('')}
-      </select>
-      <div class="spacer"></div>
-      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="openEdit('scholar', ${r.id}); event.stopPropagation();">Edit</button>
-      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="delRow('scholar', ${r.id}); event.stopPropagation();">Delete</button>
-    </div>
-  </div>`;
-}
-
-function matchesFilter(r, q){
-  if(!q) return true;
-  q = q.toLowerCase();
-  const fields = r.type==='College'
-    ? [r.name, r.app, r.scholar, r.status, r.notes]
-    : [r.name, r.sponsor, r.prize, r.status, r.notes];
-  return fields.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q));
-}
+function matchesFilter(r, q){ if(!q) return true; q=q.toLowerCase(); const fields=r.type==='College'?[r.name,r.app,r.scholar,r.status,r.notes]:[r.name,r.sponsor,r.prize,r.status,r.notes]; return fields.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q)) }
 
 function renderBoard(){
-  const d=model.get();
-  const q=($('#filterBoard').value||'').toLowerCase().trim();
+  const d=model.get(); const q=($('#filterBoard').value||'').toLowerCase().trim();
   const lanes={}; STATUSES.forEach(s=>lanes[s]=[]);
-
-  d.colleges.forEach(r=>{
-    const rec = {type:'College', name:r.name, app:r.app, scholar:r.scholar, status:r.status, notes:r.notes};
-    if(matchesFilter(rec, q)) lanes[r.status||'Considering'].push(collegeCard(r));
-  });
-  d.scholarships.forEach(r=>{
-    const rec = {type:'Scholarship', name:r.name, sponsor:r.sponsor, prize:r.prize, status:r.status, notes:r.notes};
-    if(matchesFilter(rec, q)) lanes[r.status||'Considering'].push(scholarCard(r));
-  });
-
-  const kanban=$('#kanban');
-  kanban.innerHTML=STATUSES.map(s=>`
-    <div class="lane" data-lane="${s}">
-      <h3>${s} <span class="count">(${lanes[s].length})</span></h3>
-      <div class="dropzone" data-zone="${s}">${lanes[s].join('') || '<div class="muted" style="padding:8px">No items</div>'}</div>
-    </div>`).join('');
+  d.colleges.forEach(r=>{ const rec={type:'College',name:r.name,app:r.app,scholar:r.scholar,status:r.status,notes:r.notes}; if(matchesFilter(rec,q)) lanes[r.status||'Considering'].push(collegeCard(r)); });
+  d.scholarships.forEach(r=>{ const rec={type:'Scholarship',name:r.name,sponsor:r.sponsor,prize:r.prize,status:r.status,notes:r.notes}; if(matchesFilter(rec,q)) lanes[r.status||'Considering'].push(scholarCard(r)); });
+  $('#kanban').innerHTML=STATUSES.map(s=>`<div class="lane" data-lane="${s}"><h3>${s} <span class="count">(${lanes[s].length})</span></h3><div class="dropzone" data-zone="${s}">${lanes[s].join('')||'<div class="muted" style="padding:8px">No items</div>'}</div></div>`).join('');
   enableDnD();
 }
-
 function enableDnD(){
-  const cards=$$('.card');
-  const zones=$$('.dropzone');
-  cards.forEach(c=>{
+  $$('.card').forEach(c=>{
     c.addEventListener('dragstart', e=>{ c.classList.add('dragging'); e.dataTransfer.setData('text/plain', JSON.stringify({type:c.dataset.type, id:c.dataset.id})); });
     c.addEventListener('dragend', ()=> c.classList.remove('dragging'));
   });
-  zones.forEach(z=>{
-    z.addEventListener('dragover', e=>{ e.preventDefault(); });
+  $$('.dropzone').forEach(z=>{
+    z.addEventListener('dragover', e=> e.preventDefault());
     z.addEventListener('drop', e=>{
       e.preventDefault();
-      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}');
-      if(!payload.id) return;
+      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); if(!payload.id) return;
       moveToStatus(payload.type, parseInt(payload.id,10), z.dataset.zone);
     });
   });
 }
-
 function moveToStatus(type, id, status){
   const d=model.get();
-  if(type==='college'){
-    const idx=d.colleges.findIndex(x=>x.id===id); if(idx<0) return;
-    d.colleges[idx].status=status;
-  }else{
-    const idx=d.scholarships.findIndex(x=>x.id===id); if(idx<0) return;
-    d.scholarships[idx].status=status;
-  }
+  if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges[i].status=status; }
+  else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships[i].status=status; }
   model.set(d); renderBoard(); renderTable(); buildCalendar();
 }
 
-// Table
 function renderTable(sortKey, asc=true){
-  const d=model.get();
-  const q=($('#filterTable').value||'').toLowerCase().trim();
-  let rows=[
-    ...d.colleges.map(c=>({type:'College', name:c.name, app:c.app, eaed:c.eaed, rd:c.rd, scholar:c.scholar, sdue:c.sdue, due:'', status:c.status, _id:c.id, _t:'college', notes:c.notes})),
-    ...d.scholarships.map(s=>({type:'Scholarship', name:s.name, app:s.sponsor, eaed:'', rd:'', scholar:'', sdue:'', due:s.due, status:s.status, _id:s.id, _t:'scholar', prize:s.prize, notes:s.notes}))
-  ];
-  if(sortKey){
-    rows.sort((a,b)=>{
-      if(['eaed','rd','sdue','due'].includes(sortKey)) return asc? compareDates(a[sortKey],b[sortKey]) : compareDates(b[sortKey],a[sortKey]);
-      return asc? (''+(a[sortKey]||'')).localeCompare(''+(b[sortKey]||'')) : (''+(b[sortKey]||'')).localeCompare(''+(a[sortKey]||''));
-    });
-  }
-  rows=rows.filter(r=> matchesFilter(r, q));
-  const tb=$('#collegeTable tbody');
-  tb.innerHTML = rows.map(r=>`
-    <tr>
-      <td>${r.type}</td>
-      <td>${r.name||''}</td>
-      <td>${r.app||''}</td>
-      <td>${r.eaed? fmt(r.eaed):''}</td>
-      <td>${r.rd? fmt(r.rd):''}</td>
-      <td>${r.scholar||''}</td>
-      <td>${r.sdue? fmt(r.sdue):''}</td>
-      <td>${r.due? fmt(r.due):''}</td>
-      <td>${r.status||''}</td>
-      <td><button class="btn" onclick="openEdit('${r._t}', ${r._id})">Edit</button> <button class="btn" onclick="delRow('${r._t}', ${r._id})">Delete</button></td>
-    </tr>
-  `).join('') || `<tr><td colspan="10" class="muted">No items match your filter.</td></tr>`;
+  const d=model.get(); const q=($('#filterTable').value||'').toLowerCase().trim();
+  let rows=[...d.colleges.map(c=>({type:'College',name:c.name,app:c.app,eaed:c.eaed,rd:c.rd,scholar:c.scholar,sdue:c.sdue,due:'',status:c.status,_id:c.id,_t:'college',notes:c.notes})), ...d.scholarships.map(s=>({type:'Scholarship',name:s.name,app:s.sponsor,eaed:'',rd:'',scholar:'',sdue:'',due:s.due,status:s.status,_id:s.id,_t:'scholar',prize:s.prize,notes:s.notes}))];
+  if(sortKey){ rows.sort((a,b)=>{ if(['eaed','rd','sdue','due'].includes(sortKey)) return asc? compareDates(a[sortKey],b[sortKey]) : compareDates(b[sortKey],a[sortKey]); return asc? (''+(a[sortKey]||'')).localeCompare(''+(b[sortKey]||'')) : (''+(b[sortKey]||'')).localeCompare(''+(a[sortKey]||'')); }); }
+  rows=rows.filter(r=> matchesFilter(r,q));
+  $('#collegeTable tbody').innerHTML = rows.map(r=>`<tr><td>${r.type}</td><td>${r.name||''}</td><td>${r.app||''}</td><td>${r.eaed?fmt(r.eaed):''}</td><td>${r.rd?fmt(r.rd):''}</td><td>${r.scholar||''}</td><td>${r.sdue?fmt(r.sdue):''}</td><td>${r.due?fmt(r.due):''}</td><td>${r.status||''}</td><td><button class="btn" onclick="openEdit('${r._t}', ${r._id})">Edit</button> <button class="btn" onclick="delRow('${r._t}', ${r._id})">Delete</button></td></tr>`).join('') || `<tr><td colspan="10" class="muted">No items match your filter.</td></tr>`;
 }
 $$('#collegeTable th[data-sort]').forEach(th=>{ let asc=true; th.addEventListener('click', ()=>{ renderTable(th.dataset.sort, asc); asc=!asc; }); });
 $('#filterTable').addEventListener('input', ()=>renderTable());
 $('#filterBoard').addEventListener('input', ()=>renderBoard());
 
-// True Calendar + Agenda
 let calState=null;
 function buildCalendar(){
   const d=model.get();
   if(!calState) calState={...d.calendar}; else d.calendar=calState, model.set(d);
-  const {year, month} = calState; // 0..11
-  const grid = $('#calGrid');
-  const title = $('#calTitle');
-  const monthStart = new Date(year, month, 1);
-  const monthEnd = new Date(year, month+1, 0);
+  const {year, month} = calState;
+  const grid = $('#calGrid'); const title = $('#calTitle');
+  const monthStart = new Date(year, month, 1); const monthEnd = new Date(year, month+1, 0);
   title.textContent = monthStart.toLocaleDateString(undefined, {month:'long', year:'numeric'});
-  grid.innerHTML = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
-
+  grid.innerHTML = '';
   const startOffset = monthStart.getDay();
-  const cells = [];
-  const agenda=[];
-  for(let i=0;i<startOffset;i++){ cells.push('<div class="cal-cell"></div>'); }
+  for(let i=0;i<startOffset;i++){ grid.appendChild(cell('')); }
   for(let day=1; day<=monthEnd.getDate(); day++){
-    const dateObj=new Date(year, month, day);
-    const dateISO = dateObj.toISOString().slice(0,10);
-    const items = [];
-    const addEv = (type, label) => {
-      items.push(`<span class="ev ${type}"><b>${label}</b></span>`);
-      const nice = dateObj.toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric'});
-      agenda.push({when:nice, label, type});
-    };
-    d.colleges.forEach(c=>{
-      if(c.eaed && c.eaed===dateISO) addEv('college', `${c.name} (EA/ED)`);
-      if(c.rd && c.rd===dateISO) addEv('college', `${c.name} (RD)`);
-      if(c.sdue && c.sdue===dateISO) addEv('college', `${c.name} (Scholarship)`);
-    });
-    d.scholarships.forEach(s=>{ if(s.due && s.due===dateISO) addEv('scholar', `${s.sponsor}: ${s.name}`); });
-    cells.push(`<div class="cal-cell"><div class="cal-date">${day}</div>${items.join('')}</div>`);
+    const dateISO=new Date(year,month,day).toISOString().slice(0,10);
+    const el=cell(day);
+    const add=(type,label)=>{ const s=document.createElement('span'); s.className='ev '+type; s.innerHTML='<b>'+label+'</b>'; el.appendChild(s); };
+    const dta=model.get();
+    dta.colleges.forEach(c=>{ if(c.eaed===dateISO) add('college', `${c.name} (EA/ED)`); if(c.rd===dateISO) add('college', `${c.name} (RD)`); if(c.sdue===dateISO) add('college', `${c.name} (Scholarship)`); });
+    dta.scholarships.forEach(s=>{ if(s.due===dateISO) add('scholar', `${s.sponsor}: ${s.name}`); });
+    grid.appendChild(el);
   }
-  grid.innerHTML += cells.join('');
-
-  // Agenda list (mobile-friendly)
-  const ag=$('#agendaList');
-  if(agenda.length){
-    ag.innerHTML = agenda.map(a=>`<div class="agenda-item"><div class="when">${a.when}</div><div>${a.label}</div></div>`).join('');
-  }else{
-    ag.innerHTML = `<div class="agenda-item"><div class="when">—</div><div class="muted">No deadlines this month.</div></div>`;
-  }
-
-  // nav
-  $('#prevMonth').onclick = ()=>{ calState.month--; if(calState.month<0){calState.month=11; calState.year--; } buildCalendar(); };
-  $('#nextMonth').onclick = ()=>{ calState.month++; if(calState.month>11){calState.month=0; calState.year++; } buildCalendar(); };
-  $('#todayBtn').onclick = ()=>{ const t=new Date(); calState.year=t.getFullYear(); calState.month=t.getMonth(); buildCalendar(); };
+  function cell(day){ const d=document.createElement('div'); d.className='cal-cell'; d.innerHTML = day? `<div class="cal-date">${day}</div>`: ''; return d; }
 }
+$('#prevMonth').onclick = ()=>{ calState.month--; if(calState.month<0){calState.month=11; calState.year--; } buildCalendar(); };
+$('#nextMonth').onclick = ()=>{ calState.month++; if(calState.month>11){calState.month=0; calState.year++; } buildCalendar(); };
+$('#todayBtn').onclick = ()=>{ const t=new Date(); calState.year=t.getFullYear(); calState.month=t.getMonth(); buildCalendar(); };
 
-// Add/Edit
+// CRUD
 let editingType=null, editingId=null;
 $('#addCollegeBtn').addEventListener('click', ()=>openEdit('college', null));
 $('#addScholarBtn').addEventListener('click', ()=>openEdit('scholar', null));
-
 function openEdit(type, id){
-  editingType=type; editingId=id;
-  const d=model.get();
+  editingType=type; editingId=id; const d=model.get();
   if(type==='college'){
-    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholar:'',sdue:'',status:'Considering',notes:''}
-                       : d.colleges.find(x=>x.id===id);
-    $('#cName').value=r.name||''; $('#cApp').value=r.app||''; $('#cEAED').value=r.eaed||''; $('#cRD').value=r.rd||'';
-    $('#cScholar').value=r.scholar||''; $('#cSDue').value=r.sdue||''; $('#cStatus').value=r.status||'Considering'; $('#cNotes').value=r.notes||'';
-    $('#editCollegeModal').classList.remove('hidden');
+    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholar:'',sdue:'',status:'Considering',notes:''} : d.colleges.find(x=>x.id===id);
+    cName.value=r.name||''; cApp.value=r.app||''; cEAED.value=r.eaed||''; cRD.value=r.rd||''; cScholar.value=r.scholar||''; cSDue.value=r.sdue||''; cStatus.value=r.status||'Considering'; cNotes.value=r.notes||'';
+    editCollegeModal.classList.remove('hidden');
   }else{
-    const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:''}
-                       : d.scholarships.find(x=>x.id===id);
-    $('#sSponsor').value=r.sponsor||''; $('#sName').value=r.name||''; $('#sDue').value=r.due||''; $('#sPrize').value=r.prize||''; $('#sStatus').value=r.status||'Considering'; $('#sNotes').value=r.notes||'';
-    $('#editScholarModal').classList.remove('hidden');
+    const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:''} : d.scholarships.find(x=>x.id===id);
+    sSponsor.value=r.sponsor||''; sName.value=r.name||''; sDue.value=r.due||''; sPrize.value=r.prize||''; sStatus.value=r.status||'Considering'; sNotes.value=r.notes||'';
+    editScholarModal.classList.remove('hidden');
   }
 }
-function closeEdit(type){
-  (type==='college' ? $('#editCollegeModal') : $('#editScholarModal')).classList.add('hidden');
-}
+function closeEdit(type){ (type==='college'?editCollegeModal:editScholarModal).classList.add('hidden'); }
 function saveEdit(type){
   const d=model.get();
   if(type==='college'){
-    const obj={
-      name:$('#cName').value.trim(), app:$('#cApp').value.trim(), eaed:$('#cEAED').value, rd:$('#cRD').value,
-      scholar:$('#cScholar').value.trim(), sdue:$('#cSDue').value, status:$('#cStatus').value, notes:$('#cNotes').value.trim()
-    };
+    const obj={name:cName.value.trim(), app:cApp.value.trim(), eaed:cEAED.value, rd:cRD.value, scholar:cScholar.value.trim(), sdue:cSDue.value, status:cStatus.value, notes:cNotes.value.trim()};
     if(!obj.name){ alert('College name is required.'); return; }
     if(editingId==null){ obj.id=++d.seqC; d.colleges.push(obj); } else { const i=d.colleges.findIndex(x=>x.id===editingId); if(i>=0) d.colleges[i]=Object.assign({id:editingId}, obj); }
-    $('#editCollegeModal').classList.add('hidden');
   }else{
-    const obj={
-      sponsor:$('#sSponsor').value.trim(), name:$('#sName').value.trim(), due:$('#sDue').value, prize:$('#sPrize').value.trim(),
-      status:$('#sStatus').value, notes:$('#sNotes').value.trim()
-    };
+    const obj={sponsor:sSponsor.value.trim(), name:sName.value.trim(), due:sDue.value, prize:sPrize.value.trim(), status:sStatus.value, notes:sNotes.value.trim()};
     if(!obj.name){ alert('Scholarship name is required.'); return; }
     if(editingId==null){ obj.id=++d.seqS; d.scholarships.push(obj); } else { const i=d.scholarships.findIndex(x=>x.id===editingId); if(i>=0) d.scholarships[i]=Object.assign({id:editingId}, obj); }
-    $('#editScholarModal').classList.add('hidden');
   }
-  model.set(d); renderAll();
+  model.set(d); closeEdit(type); renderAll();
 }
-
-// Bulk Import
-let bulkTarget='college';
-function openBulk(target){ bulkTarget=target||'college'; $('#bulkModal').classList.remove('hidden'); }
-function closeBulk(){ $('#bulkModal').classList.add('hidden'); $('#bulkText').value=''; }
-function doBulk(){
-  const raw=$('#bulkText').value.trim(); if(!raw){ closeBulk(); return; }
-  const lines=raw.split(/\r?\n/).filter(Boolean);
-  const header=lines[0].split(/\t|,/).map(h=>h.trim().toLowerCase());
-  const dataLines=(header.length>1)? lines.slice(1):lines;
-  const rows=dataLines.map(line=>{
-    const cols=line.split(/\t|,/).map(x=>x.trim());
-    const o={}; cols.forEach((c,i)=> o[header[i]||('col'+i)]=c); return o;
-  });
-  const d=model.get();
-  if(bulkTarget==='college'){
-    rows.forEach(o=>{
-      d.colleges.push({
-        id: ++d.seqC,
-        name:o.name||o.col0||'',
-        app:o.app||o['application type']||'',
-        eaed:o.eaed||o['ea/ed']||o['eaed']||'',
-        rd:o.rd||o['rd']||o['rd due']||'',
-        scholar:o.scholar||o['scholarship']||'',
-        sdue:o.sdue||o['scholarship due']||'',
-        status:o.status||'Considering',
-        notes:o.notes||''
-      });
-    });
-  }else{
-    rows.forEach(o=>{
-      d.scholarships.push({
-        id: ++d.seqS,
-        sponsor:o.sponsor||o.col0||'',
-        name:o.name||o['scholarship name']||o.col1||'',
-        due:o.due||o['due date']||'',
-        prize:o.prize||o['top prize']||'',
-        status:o.status||'Considering',
-        notes:o.notes||''
-      });
-    });
-  }
-  model.set(d); renderAll(); closeBulk();
-}
-
-// Delete & Notes
-function delRow(type,id){
-  const d=model.get();
-  if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges.splice(i,1); }
-  else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships.splice(i,1); }
-  model.set(d); renderAll();
-}
+function delRow(type,id){ const d=model.get(); if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges.splice(i,1); } else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships.splice(i,1); } model.set(d); renderAll(); }
 function clearNotes(){ if(confirm('Clear notes?')){ const d=model.get(); d.notes=''; model.set(d); renderNotes(); } }
-function renderNotes(){ const d=model.get(); $('#notesArea').value=d.notes||''; }
-$('#notesArea').addEventListener('input', ()=>{ const d=model.get(); d.notes=$('#notesArea').value; model.set(d); });
+function renderNotes(){ const d=model.get(); notesArea.value=d.notes||''; }
+notesArea.addEventListener('input', ()=>{ const d=model.get(); d.notes=notesArea.value; model.set(d); });
 
-// Render all
-function renderAll(){ 
-  const d=model.get();
-  if(Array.isArray(d.colleges) && d.colleges.length===0 && Array.isArray(d.scholarships) && d.scholarships.length===0){
-    model.reset();
-  }
-  renderBoard(); renderTable(); renderNotes(); 
-}
+function renderAll(){ renderBoard(); renderTable(); renderNotes(); if($('.tab.active')?.dataset.tab==='calendar') buildCalendar(); }
 model.init(); renderAll();
+
+/*** Auth + Firestore sync ***/
+const userBadge=$('#userBadge'), loginBtn=$('#loginBtn'), logoutBtn=$('#logoutBtn'), syncState=$('#syncState'), firstSyncNote=$('#firstSyncNote');
+loginBtn.onclick = async()=>{ try{ await signInWithPopup(auth, new GoogleAuthProvider()); }catch(e){ alert('Login failed: '+e.message); } };
+logoutBtn.onclick = ()=> signOut(auth);
+
+onAuthStateChanged(auth, async(user)=>{
+  currentUser=user||null;
+  if(!user){
+    userBadge.classList.add('hidden'); logoutBtn.classList.add('hidden'); loginBtn.classList.remove('hidden');
+    syncState.textContent='offline';
+    if(unsubscribeCloud) unsubscribeCloud(), unsubscribeCloud=null;
+    cloudDocRef=null;
+    return;
+  }
+  userBadge.textContent = user.displayName || user.email || 'Signed in';
+  userBadge.classList.remove('hidden'); logoutBtn.classList.remove('hidden'); loginBtn.classList.add('hidden');
+  firstSyncNote.classList.remove('hidden');
+  syncState.textContent='connecting…';
+
+  const cloudPath = ['users', user.uid, 'boards', 'default'];
+  cloudDocRef = doc(db, ...cloudPath);
+
+  const snap = await getDoc(cloudDocRef);
+  if(!snap.exists()){
+    if(confirm('No cloud data found. Upload your current local board to the cloud now?')){
+      await setDoc(cloudDocRef, model.get());
+      syncState.textContent='synced (uploaded)';
+    }else{
+      syncState.textContent='local only';
+    }
+  }else{
+    if(confirm('Cloud data exists. Replace your local board with cloud data? (OK = pull, Cancel = keep local)')){
+      const data = snap.data();
+      localStorage.setItem(localKey, JSON.stringify(data)); renderAll();
+      syncState.textContent='synced (downloaded)';
+    }else{
+      syncState.textContent='synced (will overwrite cloud on change)';
+    }
+  }
+
+  if(unsubscribeCloud) unsubscribeCloud();
+  unsubscribeCloud = onSnapshot(cloudDocRef, (docSnap)=>{
+    if(!docSnap.exists()) return;
+    const local = model.get(); const remote = docSnap.data();
+    if(JSON.stringify(local)!==JSON.stringify(remote)){
+      localStorage.setItem(localKey, JSON.stringify(remote)); renderAll();
+      syncState.textContent='synced (remote update)';
+    }
+  });
+});
+
+function debounceSaveCloud(data){
+  if(!cloudDocRef) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async()=>{
+    try{ await setDoc(cloudDocRef, data); syncState.textContent='synced'; }
+    catch(e){ syncState.textContent='error'; console.error(e); }
+  }, 400);
+}
 </script>
 </body>
 </html>
