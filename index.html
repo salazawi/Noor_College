@@ -210,6 +210,24 @@ sponsor,name,due,prize,status,notes"></textarea>
 <footer class="wrap muted" style="padding:28px 16px">Built for Noor with ❤️ — cloud sync when signed in; otherwise local-only.</footer>
 
 <script type="module">
+// Bind form fields explicitly for edit modals
+const cName    = document.getElementById('cName');
+const cApp     = document.getElementById('cApp');
+const cEAED    = document.getElementById('cEAED');
+const cRD      = document.getElementById('cRD');
+const cScholar = document.getElementById('cScholar');
+const cSDue    = document.getElementById('cSDue');
+const cStatus  = document.getElementById('cStatus');
+const cNotes   = document.getElementById('cNotes');
+
+const sSponsor = document.getElementById('sSponsor');
+const sName    = document.getElementById('sName');
+const sDue     = document.getElementById('sDue');
+const sPrize   = document.getElementById('sPrize');
+const sStatus  = document.getElementById('sStatus');
+const sNotes   = document.getElementById('sNotes');
+
+const notesArea = document.getElementById('notesArea');
 /*** Firebase SDK (modular) ***/
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
