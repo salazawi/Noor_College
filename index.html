@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Noor’s App & Scholarship Board — v4.3</title>
+<meta name="theme-color" content="#faf7fb">
+<style>
+  :root{
+    /* Pink, Green & Purple Illustration palette */
+    --bg: #faf7fb;          /* very light lavender */
+    --ink: #1e1231;         /* deep eggplant */
+    --muted: #615e76;       /* soft plum */
+    --panel: #ffffff;
+    --border: #eadff1;
+    --shadow: 0 6px 20px rgba(30,18,49,.08);
+
+    /* Lanes */
+    --lane-bg: #ffffff;
+    --lane-border: #eadff1;
+
+    /* Cards — distinct by type */
+    --college-bg: #efe7ff;     /* lavender for colleges */
+    --college-border: #d7c8ff;
+    --scholar-bg: #ffe6ef;     /* rosy pink for scholarships */
+    --scholar-border: #ffc2d4;
+
+    /* Tags & pills */
+    --tag-bg: #f5edf9;
+    --tag-border: #eadff1;
+
+    /* Accents */
+    --accent-pink: #ff6fa3;
+    --accent-green: #2ec4a6;
+    --accent-purple: #7b61ff;
+
+    /* Due states */
+    --soon: #ffb020;   /* amber */
+    --urgent: #ff6b6b; /* coral red */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; color:var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "SF Pro", "Segoe UI", Roboto, Helvetica, Arial;
+    background: var(--bg);
+  }
+  a{color:var(--accent-purple); text-decoration:none}
+  header{
+    position:sticky; top:0; z-index:20;
+    background: var(--panel);
+    border-bottom:1px solid var(--border);
+  }
+  .wrap{max-width:1220px; margin:0 auto; padding:14px 16px}
+  .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .brand{display:flex; align-items:center; gap:12px; font-weight:900; letter-spacing:.2px}
+  .logo{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
+        background: linear-gradient(135deg, var(--accent-purple), #b39dff); color:#fff; font-weight:900; box-shadow:var(--shadow)}
+  nav{display:flex; gap:8px; flex-wrap:wrap}
+  .tab{appearance:none; border:1px solid var(--border); background:var(--panel); color:var(--ink);
+       padding:9px 12px; border-radius:10px; cursor:pointer; font-weight:700; box-shadow:var(--shadow)}
+  .tab.active{border-color: transparent; background:linear-gradient(#ffffff, #f7f2fb)}
+  .spacer{flex:1}
+  .btn{appearance:none;border:1px solid var(--border);cursor:pointer;font-weight:800;border-radius:10px;padding:10px 14px; background:#fff; color:var(--ink); box-shadow:var(--shadow)}
+  .btn.primary{border-color: transparent; background: linear-gradient(135deg, var(--accent-purple), #b39dff); color:#fff}
+  .btn.green{border-color: transparent; background: linear-gradient(135deg, var(--accent-green), #8be3d3); color:#0e2d29}
+  .btn.pink{border-color: transparent; background: linear-gradient(135deg, var(--accent-pink), #ffb3cd); color:#5b0d27}
+  main .wrap{padding:18px 16px}
+  .muted{color:var(--muted)}
+  .hidden{display:none !important}
+  input, select, textarea{width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border);
+    outline:none; background:#fff; color:var(--ink)}
+  input:focus, select:focus, textarea:focus{border-color: var(--accent-purple)}
+
+  /* Board */
+  .kanban{display:grid; grid-template-columns: repeat(5, 1fr); gap:16px; align-items:flex-start}
+  .lane{background: var(--lane-bg);
+        border:1px solid var(--lane-border); border-radius:14px; padding:12px; min-height:220px; box-shadow: var(--shadow)}
+  .lane h3{margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)}
+  .lane .count{font-weight:900; color:var(--accent-purple)}
+  .dropzone{min-height:160px}
+  .card{border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:12px; box-shadow: var(--shadow); cursor:grab}
+  .card.college{background: var(--college-bg); border-color: var(--college-border);}
+  .card.scholar{background: var(--scholar-bg); border-color: var(--scholar-border);}
+  .card.dragging{opacity:.7}
+  .title{font-weight:900}
+  .rowtiny{display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:6px}
+  .tag{font-size:12px; padding:4px 8px; border-radius:999px; border:1px solid var(--tag-border); background: var(--tag-bg); color:var(--muted)}
+  .pill{padding:4px 8px; border-radius:999px; background: #f2f2ff; border:1px solid var(--border);}
+  .dueSoon{border-color: var(--soon); color: var(--soon); background:#fff7eb}
+  .dueUrgent{border-color: var(--urgent); color: var(--urgent); background:#fff1f1}
+  .no-drag{cursor:pointer}
+
+  /* Table */
+  table{width:100%; border-collapse:collapse; font-size:14px; background:#fff; border:1px solid var(--border); border-radius:12px; overflow:hidden; box-shadow:var(--shadow)}
+  th, td{padding:12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top}
+  thead th{color:var(--muted); font-weight:800; user-select:none; cursor:pointer; background:#f9f4fc}
+  tr:hover td{background:#faf7ff}
+
+  /* Modal */
+  .modal{position:fixed; inset:0; background:rgba(30,18,49,.25); display:grid; place-items:center; z-index:99}
+  .panel{background: #fff; border:1px solid var(--border); border-radius:14px; padding:16px; box-shadow:var(--shadow); max-width:900px; width:92vw}
+  .grid6{display:grid; gap:10px; grid-template-columns: repeat(6, 1fr)}
+
+  /* True Calendar */
+  .cal-head{display:flex; align-items:center; gap:10px; margin-bottom:10px}
+  .cal-nav{display:flex; gap:8px}
+  .calendar{background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden}
+  .cal-grid{display:grid; grid-template-columns: repeat(7, 1fr);}
+  .cal-dow{background:#f9f4fc; color:var(--muted); padding:10px; font-weight:800; text-align:center; border-bottom:1px solid var(--border)}
+  .cal-cell{min-height:120px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); padding:8px; position:relative}
+  .cal-cell:nth-child(7n){border-right:0}
+  .cal-date{font-size:12px; color:var(--muted); position:absolute; top:6px; right:8px}
+  .ev{display:block; margin-top:18px; font-size:12px; border-radius:8px; padding:6px 8px; border:1px solid var(--border);}
+  .ev.college{background:#efe7ff}
+  .ev.scholar{background:#ffe6ef}
+  .ev .when{opacity:.7}
+  .cal-empty{color:#c1b8cf; text-align:center; padding:20px}
+  @media (max-width: 1100px){ .kanban{grid-template-columns: repeat(3, 1fr)} .grid6{grid-template-columns: repeat(3, 1fr)} }
+  @media (max-width: 760px){ .kanban{grid-template-columns: 1fr} nav{overflow:auto} .grid6{grid-template-columns: 1fr} .cal-cell{min-height:90px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap row">
+    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· Colleges & Scholarships</span></div>
+    <nav id="tabs" class="spacer">
+      <button class="tab active" data-tab="board">Board</button>
+      <button class="tab" data-tab="table">Table</button>
+      <button class="tab" data-tab="calendar">Calendar</button>
+      <button class="tab" data-tab="notes">Notes</button>
+    </nav>
+    <button id="exportBtn" class="btn">Export</button>
+    <input type="file" id="importFile" class="hidden" accept="application/json">
+    <button id="importBtn" class="btn primary">Import</button>
+    <button id="seedBtn" class="btn green">Load Sample Data</button>
+    <button id="addCollegeBtn" class="btn primary">+ College</button>
+    <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
+  </div>
+</header>
+
+<main>
+  <!-- BOARD -->
+  <section id="board" class="wrap">
+    <div class="row" style="margin-bottom:10px">
+      <input id="filterBoard" placeholder="Type to filter… e.g., Duke, Common, Flinn, VFW">
+      <div class="spacer"></div>
+      <button class="btn" onclick="openBulk('college')">Bulk Import Colleges</button>
+      <button class="btn" onclick="openBulk('scholar')">Bulk Import Scholarships</button>
+    </div>
+    <div class="kanban" id="kanban"></div>
+  </section>
+
+  <!-- TABLE -->
+  <section id="table" class="wrap hidden">
+    <div class="row" style="margin-bottom:10px">
+      <input id="filterTable" placeholder="Filter…">
+      <div class="spacer"></div>
+      <button class="btn" onclick="openBulk('college')">Bulk Import Colleges</button>
+      <button class="btn" onclick="openBulk('scholar')">Bulk Import Scholarships</button>
+    </div>
+    <table id="collegeTable">
+      <thead>
+        <tr>
+          <th data-sort="type">Type</th>
+          <th data-sort="name">Name</th>
+          <th data-sort="app">App / Sponsor</th>
+          <th data-sort="eaed">EA/ED</th>
+          <th data-sort="rd">RD</th>
+          <th data-sort="scholar">Scholarship</th>
+          <th data-sort="sdue">Scholarship Due</th>
+          <th data-sort="due">Due</th>
+          <th data-sort="status">Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- CALENDAR -->
+  <section id="calendar" class="wrap hidden">
+    <div class="calendar">
+      <div class="wrap cal-head">
+        <div id="calTitle" style="font-weight:900"></div>
+        <div class="spacer"></div>
+        <div class="cal-nav">
+          <button class="btn" id="prevMonth">◀︎</button>
+          <button class="btn" id="todayBtn">Today</button>
+          <button class="btn" id="nextMonth">▶︎</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="calGrid">
+        <!-- days of week -->
+      </div>
+    </div>
+  </section>
+
+  <!-- NOTES -->
+  <section id="notes" class="wrap hidden">
+    <textarea id="notesArea" rows="10" placeholder="Essay ideas, prompts, to-dos…"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div class="muted">Autosaves to this browser.</div>
+      <div class="spacer"></div>
+      <button class="btn" onclick="clearNotes()">Clear</button>
+    </div>
+  </section>
+</main>
+
+<!-- Add/Edit College Modal -->
+<div id="editCollegeModal" class="modal hidden">
+  <div class="panel">
+    <div class="row" style="margin-bottom:10px">
+      <div style="font-weight:900">College</div>
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeEdit('college')">Close</button>
+      <button class="btn primary" onclick="saveEdit('college')">Save</button>
+    </div>
+    <div class="grid6">
+      <input id="cName" placeholder="College name">
+      <input id="cApp" placeholder="Application type (Common/UC/…)">
+      <input id="cEAED" type="date" placeholder="EA/ED due">
+      <input id="cRD" type="date" placeholder="RD due">
+      <input id="cScholar" placeholder="Scholarship(s)">
+      <input id="cSDue" type="date" placeholder="Scholarship due">
+      <select id="cStatus">
+        <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
+      </select>
+      <input id="cNotes" placeholder="Notes">
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Scholarship Modal -->
+<div id="editScholarModal" class="modal hidden">
+  <div class="panel">
+    <div class="row" style="margin-bottom:10px">
+      <div style="font-weight:900">Scholarship</div>
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeEdit('scholar')">Close</button>
+      <button class="btn primary" onclick="saveEdit('scholar')">Save</button>
+    </div>
+    <div class="grid6">
+      <input id="sSponsor" placeholder="Sponsor">
+      <input id="sName" placeholder="Scholarship name">
+      <input id="sDue" type="date" placeholder="Due date">
+      <input id="sPrize" placeholder="Top prize (e.g., $25,000)">
+      <select id="sStatus">
+        <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
+      </select>
+      <input id="sNotes" placeholder="Notes (optional)">
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Import Modal -->
+<div id="bulkModal" class="modal hidden">
+  <div class="panel">
+    <h3 style="margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)">Bulk Import</h3>
+    <p class="muted">Paste CSV/TSV with headers. Existing items remain.</p>
+    <textarea id="bulkText" rows="10" placeholder="For colleges (headers):
+name,app,eaed,rd,scholar,sdue,status,notes
+
+For scholarships (headers):
+sponsor,name,due,prize,status,notes"></textarea>
+    <div class="row" style="margin-top:10px">
+      <div class="spacer"></div>
+      <button class="btn" onclick="closeBulk()">Cancel</button>
+      <button class="btn primary" onclick="doBulk()">Import</button>
+    </div>
+  </div>
+</div>
+
+<footer class="wrap muted" style="padding:28px 16px">Built for Noor with ❤️ — data stays private (localStorage). Export backups regularly.</footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const dbKey='noor_board_v4_3';
+
+const model={
+  load(){return JSON.parse(localStorage.getItem(dbKey) || '{}');},
+  save(d){localStorage.setItem(dbKey, JSON.stringify(d));},
+  init(){
+    const d=model.load();
+    if(!d.seqC) d.seqC=100;
+    if(!d.seqS) d.seqS=1000;
+    if(!Array.isArray(d.colleges)) d.colleges=seedColleges();
+    if(!Array.isArray(d.scholarships)) d.scholarships=seedScholars();
+    if(!d.notes) d.notes='';
+    if(!d.calendar){ d.calendar={year:new Date().getFullYear(), month:new Date().getMonth()}; }
+    model.save(d);
+  },
+  reset(){
+    const d={seqC:100, seqS:1000, colleges:seedColleges(), scholarships:seedScholars(), notes:'', calendar:{year:new Date().getFullYear(), month:new Date().getMonth()}};
+    model.save(d);
+  },
+  get(){return model.load();},
+  set(d){model.save(d);}
+};
+
+function seedColleges(){
+  const names=[
+    'Duke University','Vanderbilt University','Rice University','University of Toronto','University of Notre Dame',
+    'UCLA','UC Berkeley','University of Virginia','UNC Chapel Hill','UC Santa Barbara','UC San Diego','Boston College',
+    'UT Austin','Boston University','William & Mary','Case Western Reserve','Wake Forest University','University of Washington',
+    'University of Arizona','Arizona State University','Swarthmore College','Washington and Lee University','Emory University',
+    'Georgia Tech','Carnegie Mellon University','Northwestern University','University of Chicago','Princeton University',
+    'Harvard University','Yale University','Columbia University','Cornell University','Brown University','Stanford University'
+  ];
+  return names.map((n,i)=>({id:101+i,name:n,app:'',eaed:'',rd:'',scholar:'',sdue:'',status:i<8?'Considering':(i<16?'Applying':'Considering'),notes:''}));
+}
+function seedScholars(){
+  return [
+    {id:1001, sponsor:'Flinn Foundation', name:'Flinn Scholars', due:'2025-10-01', prize:'Full ride', status:'Considering', notes:''},
+    {id:1002, sponsor:'VFW', name:'Voice of Democracy', due:'2025-10-31', prize:'$35,000', status:'Considering', notes:''},
+    {id:1003, sponsor:'Elks', name:'Most Valuable Student', due:'2025-11-12', prize:'$4k–$30k', status:'Considering', notes:''},
+    {id:1004, sponsor:'Taco Bell', name:'Live Más Scholarship', due:'2026-01-08', prize:'$25,000', status:'Considering', notes:''},
+    {id:1005, sponsor:'UCB Family', name:'Epilepsy Scholarship', due:'2025-03-15', prize:'$5k–$10k', status:'Considering', notes:''},
+    {id:1006, sponsor:'Scottsdale Charros', name:'Scottsdale Champion Scholarship', due:'2025-02-28', prize:'—', status:'Considering', notes:''},
+    {id:1007, sponsor:'Credit Union West', name:'Scholarship', due:'2025-03-31', prize:'$2,000', status:'Considering', notes:''},
+    {id:1008, sponsor:'Bryan Cameron', name:'Cameron Impact Scholarship', due:'2025-05-21', prize:'—', status:'Considering', notes:''},
+    {id:1009, sponsor:'Four Star Leadership', name:'with Gen. Tommy Franks', due:'2025-04-04', prize:'$2.5k–$5k', status:'Considering', notes:''},
+    {id:1010, sponsor:'Stossel in the Classroom', name:'Essay Contest', due:'2025-03-12', prize:'—', status:'Considering', notes:''}
+  ];
+}
+
+// Tabs
+$('#tabs').addEventListener('click', (e)=>{
+  if(!e.target.matches('.tab')) return;
+  $$('.tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
+  const tab=e.target.dataset.tab;
+  ['board','table','calendar','notes'].forEach(id=>$('#'+id).classList.toggle('hidden', id!==tab));
+  if(tab==='calendar') buildCalendar();
+  if(tab==='table') renderTable();
+});
+
+// Export/Import
+$('#exportBtn').addEventListener('click', ()=>{
+  const data=JSON.stringify(model.get(),null,2);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='noor-board-v4_3.json'; a.click(); URL.revokeObjectURL(a.href);
+});
+$('#importBtn').addEventListener('click', ()=>$('#importFile').click());
+$('#importFile').addEventListener('change', async(e)=>{const f=e.target.files[0]; if(!f) return; try{const text=await f.text(); const json=JSON.parse(text); model.set(json); renderAll(); alert('Imported!');}catch{alert('Invalid file.');}});
+document.getElementById('seedBtn').addEventListener('click', ()=>{ if(confirm('Replace current data with sample data?')){ model.reset(); renderAll(); }});
+
+// Utils
+function fmt(d){return d? new Date(d).toLocaleDateString():'';}
+function daysLeft(d){ if(!d) return null; return Math.ceil((new Date(d)-today())/86400000); }
+function today(){const t=new Date(); t.setHours(0,0,0,0); return t; }
+function compareDates(a,b){ return (a?new Date(a).getTime():0) - (b?new Date(b).getTime():0); }
+function dueClass(d){
+  const dl=daysLeft(d);
+  if(dl==null) return '';
+  if(dl<=7) return 'dueUrgent';
+  if(dl<=21) return 'dueSoon';
+  return '';
+}
+
+// Board
+const STATUSES=['Considering','Applying','Submitted','Interview','Decision'];
+
+function collegeCard(r){
+  return `<div class="card college" draggable="true" data-type="college" data-id="${r.id}">
+    <div class="title">${r.name||''}</div>
+    <div class="rowtiny"><span class="tag">${r.app||'—'}</span></div>
+    <div class="rowtiny">
+      <span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt(r.eaed): '—'}</span>
+      <span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt(r.rd): '—'}</span>
+    </div>
+    <div class="rowtiny">
+      <span class="tag">Scholarship: ${r.scholar||'—'}</span>
+      <span class="tag ${dueClass(r.sdue)}">Due: ${r.sdue? fmt(r.sdue): '—'}</span>
+    </div>
+    <div class="rowtiny">
+      <div class="spacer"></div>
+      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="openEdit('college', ${r.id}); event.stopPropagation();">Edit</button>
+      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="delRow('college', ${r.id}); event.stopPropagation();">Delete</button>
+    </div>
+  </div>`;
+}
+
+function scholarCard(r){
+  return `<div class="card scholar" draggable="true" data-type="scholar" data-id="${r.id}">
+    <div class="title">${r.name||''}</div>
+    <div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span></div>
+    <div class="rowtiny">
+      <div class="spacer"></div>
+      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="openEdit('scholar', ${r.id}); event.stopPropagation();">Edit</button>
+      <button class="btn no-drag" draggable="false" onmousedown="event.stopPropagation();" onclick="delRow('scholar', ${r.id}); event.stopPropagation();">Delete</button>
+    </div>
+  </div>`;
+}
+
+function matchesFilter(r, q){
+  if(!q) return true;
+  q = q.toLowerCase();
+  const fields = r.type==='College'
+    ? [r.name, r.app, r.scholar, r.status, r.notes]
+    : [r.name, r.sponsor, r.prize, r.status, r.notes];
+  return fields.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q));
+}
+
+function renderBoard(){
+  const d=model.get();
+  const q=($('#filterBoard').value||'').toLowerCase().trim();
+  const lanes={}; STATUSES.forEach(s=>lanes[s]=[]);
+
+  d.colleges.forEach(r=>{
+    const rec = {type:'College', name:r.name, app:r.app, scholar:r.scholar, status:r.status, notes:r.notes};
+    if(matchesFilter(rec, q)) lanes[r.status||'Considering'].push(collegeCard(r));
+  });
+  d.scholarships.forEach(r=>{
+    const rec = {type:'Scholarship', name:r.name, sponsor:r.sponsor, prize:r.prize, status:r.status, notes:r.notes};
+    if(matchesFilter(rec, q)) lanes[r.status||'Considering'].push(scholarCard(r));
+  });
+
+  const kanban=$('#kanban');
+  kanban.innerHTML=STATUSES.map(s=>`
+    <div class="lane" data-lane="${s}">
+      <h3>${s} <span class="count">(${lanes[s].length})</span></h3>
+      <div class="dropzone" data-zone="${s}">${lanes[s].join('') || '<div class="muted" style="padding:8px">No items</div>'}</div>
+    </div>`).join('');
+  enableDnD();
+}
+
+function enableDnD(){
+  const cards=$$('.card');
+  const zones=$$('.dropzone');
+  cards.forEach(c=>{
+    c.addEventListener('dragstart', e=>{ c.classList.add('dragging'); e.dataTransfer.setData('text/plain', JSON.stringify({type:c.dataset.type, id:c.dataset.id})); });
+    c.addEventListener('dragend', ()=> c.classList.remove('dragging'));
+  });
+  zones.forEach(z=>{
+    z.addEventListener('dragover', e=>{ e.preventDefault(); });
+    z.addEventListener('drop', e=>{
+      e.preventDefault();
+      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}');
+      if(!payload.id) return;
+      moveToStatus(payload.type, parseInt(payload.id,10), z.dataset.zone);
+    });
+  });
+}
+
+function moveToStatus(type, id, status){
+  const d=model.get();
+  if(type==='college'){
+    const idx=d.colleges.findIndex(x=>x.id===id); if(idx<0) return;
+    d.colleges[idx].status=status;
+  }else{
+    const idx=d.scholarships.findIndex(x=>x.id===id); if(idx<0) return;
+    d.scholarships[idx].status=status;
+  }
+  model.set(d); renderBoard(); renderTable(); buildCalendar();
+}
+
+// Table
+function renderTable(sortKey, asc=true){
+  const d=model.get();
+  const q=($('#filterTable').value||'').toLowerCase().trim();
+  let rows=[
+    ...d.colleges.map(c=>({type:'College', name:c.name, app:c.app, eaed:c.eaed, rd:c.rd, scholar:c.scholar, sdue:c.sdue, due:'', status:c.status, _id:c.id, _t:'college', notes:c.notes})),
+    ...d.scholarships.map(s=>({type:'Scholarship', name:s.name, app:s.sponsor, eaed:'', rd:'', scholar:'', sdue:'', due:s.due, status:s.status, _id:s.id, _t:'scholar', prize:s.prize, notes:s.notes}))
+  ];
+  if(sortKey){
+    rows.sort((a,b)=>{
+      if(['eaed','rd','sdue','due'].includes(sortKey)) return asc? compareDates(a[sortKey],b[sortKey]) : compareDates(b[sortKey],a[sortKey]);
+      return asc? (''+(a[sortKey]||'')).localeCompare(''+(b[sortKey]||'')) : (''+(b[sortKey]||'')).localeCompare(''+(a[sortKey]||''));
+    });
+  }
+  rows=rows.filter(r=> matchesFilter(r, q));
+  const tb=$('#collegeTable tbody');
+  tb.innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.type}</td>
+      <td>${r.name||''}</td>
+      <td>${r.app||''}</td>
+      <td>${r.eaed? fmt(r.eaed):''}</td>
+      <td>${r.rd? fmt(r.rd):''}</td>
+      <td>${r.scholar||''}</td>
+      <td>${r.sdue? fmt(r.sdue):''}</td>
+      <td>${r.due? fmt(r.due):''}</td>
+      <td>${r.status||''}</td>
+      <td><button class="btn" onclick="openEdit('${r._t}', ${r._id})">Edit</button> <button class="btn" onclick="delRow('${r._t}', ${r._id})">Delete</button></td>
+    </tr>
+  `).join('') || `<tr><td colspan="10" class="muted">No items match your filter.</td></tr>`;
+}
+$$('#collegeTable th[data-sort]').forEach(th=>{ let asc=true; th.addEventListener('click', ()=>{ renderTable(th.dataset.sort, asc); asc=!asc; }); });
+$('#filterTable').addEventListener('input', ()=>renderTable());
+$('#filterBoard').addEventListener('input', ()=>renderBoard());
+
+// True Calendar (month grid)
+let calState=null;
+function buildCalendar(){
+  const d=model.get();
+  if(!calState) calState={...d.calendar}; else d.calendar=calState, model.set(d);
+  const {year, month} = calState; // month 0..11
+  const grid = $('#calGrid');
+  const title = $('#calTitle');
+  const now = new Date();
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month+1, 0);
+  title.textContent = monthStart.toLocaleDateString(undefined, {month:'long', year:'numeric'});
+
+  // render days of week header
+  grid.innerHTML = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+  const startOffset = monthStart.getDay(); // 0=Sun
+  const totalCells = startOffset + monthEnd.getDate();
+  const cells = [];
+  for(let i=0;i<startOffset;i++){ cells.push('<div class="cal-cell"></div>'); }
+  for(let day=1; day<=monthEnd.getDate(); day++){
+    const dateISO = new Date(year, month, day).toISOString().slice(0,10);
+    const items = [];
+    // collect events
+    const addEv = (obj, type, label, whenISO) => {
+      const ev = `<span class="ev ${type}"><b>${label}</b><span class="when"> — ${type==='college'?'College':'Scholarship'}</span></span>`;
+      items.push(ev);
+    };
+    d.colleges.forEach(c=>{
+      if(c.eaed && c.eaed===dateISO) addEv(c,'college', `${c.name} (EA/ED)`, c.eaed);
+      if(c.rd && c.rd===dateISO) addEv(c,'college', `${c.name} (RD)`, c.rd);
+      if(c.sdue && c.sdue===dateISO) addEv(c,'college', `${c.name} (Scholarship)`, c.sdue);
+    });
+    d.scholarships.forEach(s=>{ if(s.due && s.due===dateISO) addEv(s,'scholar', `${s.sponsor}: ${s.name}`, s.due); });
+
+    cells.push(`<div class="cal-cell"><div class="cal-date">${day}</div>${items.join('') || ''}</div>`);
+  }
+  grid.innerHTML += cells.join('');
+
+  // nav
+  $('#prevMonth').onclick = ()=>{ calState.month--; if(calState.month<0){calState.month=11; calState.year--; } buildCalendar(); };
+  $('#nextMonth').onclick = ()=>{ calState.month++; if(calState.month>11){calState.month=0; calState.year++; } buildCalendar(); };
+  $('#todayBtn').onclick = ()=>{ const t=new Date(); calState.year=t.getFullYear(); calState.month=t.getMonth(); buildCalendar(); };
+}
+
+// Add/Edit
+let editingType=null, editingId=null;
+$('#addCollegeBtn').addEventListener('click', ()=>openEdit('college', null));
+$('#addScholarBtn').addEventListener('click', ()=>openEdit('scholar', null));
+
+function openEdit(type, id){
+  editingType=type; editingId=id;
+  const d=model.get();
+  if(type==='college'){
+    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholar:'',sdue:'',status:'Considering',notes:''}
+                       : d.colleges.find(x=>x.id===id);
+    $('#cName').value=r.name||''; $('#cApp').value=r.app||''; $('#cEAED').value=r.eaed||''; $('#cRD').value=r.rd||'';
+    $('#cScholar').value=r.scholar||''; $('#cSDue').value=r.sdue||''; $('#cStatus').value=r.status||'Considering'; $('#cNotes').value=r.notes||'';
+    $('#editCollegeModal').classList.remove('hidden');
+  }else{
+    const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:''}
+                       : d.scholarships.find(x=>x.id===id);
+    $('#sSponsor').value=r.sponsor||''; $('#sName').value=r.name||''; $('#sDue').value=r.due||''; $('#sPrize').value=r.prize||''; $('#sStatus').value=r.status||'Considering'; $('#sNotes').value=r.notes||'';
+    $('#editScholarModal').classList.remove('hidden');
+  }
+}
+function closeEdit(type){
+  (type==='college' ? $('#editCollegeModal') : $('#editScholarModal')).classList.add('hidden');
+}
+function saveEdit(type){
+  const d=model.get();
+  if(type==='college'){
+    const obj={
+      name:$('#cName').value.trim(), app:$('#cApp').value.trim(), eaed:$('#cEAED').value, rd:$('#cRD').value,
+      scholar:$('#cScholar').value.trim(), sdue:$('#cSDue').value, status:$('#cStatus').value, notes:$('#cNotes').value.trim()
+    };
+    if(!obj.name){ alert('College name is required.'); return; }
+    if(editingId==null){ obj.id=++d.seqC; d.colleges.push(obj); } else { const i=d.colleges.findIndex(x=>x.id===editingId); if(i>=0) d.colleges[i]=Object.assign({id:editingId}, obj); }
+    $('#editCollegeModal').classList.add('hidden');
+  }else{
+    const obj={
+      sponsor:$('#sSponsor').value.trim(), name:$('#sName').value.trim(), due:$('#sDue').value, prize:$('#sPrize').value.trim(),
+      status:$('#sStatus').value, notes:$('#sNotes').value.trim()
+    };
+    if(!obj.name){ alert('Scholarship name is required.'); return; }
+    if(editingId==null){ obj.id=++d.seqS; d.scholarships.push(obj); } else { const i=d.scholarships.findIndex(x=>x.id===editingId); if(i>=0) d.scholarships[i]=Object.assign({id:editingId}, obj); }
+    $('#editScholarModal').classList.add('hidden');
+  }
+  model.set(d); renderAll();
+}
+
+// Bulk Import
+let bulkTarget='college';
+function openBulk(target){ bulkTarget=target||'college'; $('#bulkModal').classList.remove('hidden'); }
+function closeBulk(){ $('#bulkModal').classList.add('hidden'); $('#bulkText').value=''; }
+function doBulk(){
+  const raw=$('#bulkText').value.trim(); if(!raw){ closeBulk(); return; }
+  const lines=raw.split(/\r?\n/).filter(Boolean);
+  const header=lines[0].split(/\t|,/).map(h=>h.trim().toLowerCase());
+  const dataLines=(header.length>1)? lines.slice(1):lines;
+  const rows=dataLines.map(line=>{
+    const cols=line.split(/\t|,/).map(x=>x.trim());
+    const o={}; cols.forEach((c,i)=> o[header[i]||('col'+i)]=c); return o;
+  });
+  const d=model.get();
+  if(bulkTarget==='college'){
+    rows.forEach(o=>{
+      d.colleges.push({
+        id: ++d.seqC,
+        name:o.name||o.col0||'',
+        app:o.app||o['application type']||'',
+        eaed:o.eaed||o['ea/ed']||o['eaed']||'',
+        rd:o.rd||o['rd']||o['rd due']||'',
+        scholar:o.scholar||o['scholarship']||'',
+        sdue:o.sdue||o['scholarship due']||'',
+        status:o.status||'Considering',
+        notes:o.notes||''
+      });
+    });
+  }else{
+    rows.forEach(o=>{
+      d.scholarships.push({
+        id: ++d.seqS,
+        sponsor:o.sponsor||o.col0||'',
+        name:o.name||o['scholarship name']||o.col1||'',
+        due:o.due||o['due date']||'',
+        prize:o.prize||o['top prize']||'',
+        status:o.status||'Considering',
+        notes:o.notes||''
+      });
+    });
+  }
+  model.set(d); renderAll(); closeBulk();
+}
+
+// Delete
+function delRow(type,id){
+  const d=model.get();
+  if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges.splice(i,1); }
+  else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships.splice(i,1); }
+  model.set(d); renderAll();
+}
+
+// Calendar & Notes
+function renderNotes(){ const d=model.get(); $('#notesArea').value=d.notes||''; }
+$('#notesArea').addEventListener('input', ()=>{ const d=model.get(); d.notes=$('#notesArea').value; model.set(d); });
+function buildCalendarIfVisible(){ if(!$('#calendar').classList.contains('hidden')) buildCalendar(); }
+
+// Render all
+function renderAll(){ 
+  const d=model.get();
+  if(Array.isArray(d.colleges) && d.colleges.length===0 && Array.isArray(d.scholarships) && d.scholarships.length===0){
+    model.reset();
+  }
+  renderBoard(); renderTable(); buildCalendarIfVisible(); renderNotes(); 
+}
+model.init(); renderAll();
+</script>
+</body>
+</html>
