@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Noor’s College Board — v5.1 (Firebase Sync, Fixed)</title>
+<title>Noor’s College Board — v6.0 (Split Considering + College Scholarships + Labels)</title>
 <meta name="theme-color" content="#faf7fb">
 <style>
   :root{--bg:#faf7fb;--ink:#1e1231;--muted:#615e76;--panel:#fff;--border:#eadff1;--shadow:0 6px 20px rgba(30,18,49,.08);
@@ -28,7 +28,8 @@
   main .wrap{padding:18px 16px}.muted{color:var(--muted)}.hidden{display:none!important}
   input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);outline:none;background:#fff;color:var(--ink);font-size:16px}
   input:focus,select:focus,textarea:focus{border-color:var(--accent-purple)}
-  .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;align-items:flex-start}
+  label{font-size:12px;color:var(--muted);font-weight:700;display:block;margin:6px 0 4px 0}
+  .kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:flex-start}
   .lane{background:var(--lane-bg);border:1px solid var(--lane-border);border-radius:14px;padding:12px;min-height:220px;box-shadow:var(--shadow)}
   .lane h3{margin:0 0 8px 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .lane .count{font-weight:900;color:var(--accent-purple)}.dropzone{min-height:160px}
@@ -45,11 +46,11 @@
   .modal{position:fixed;inset:0;background:rgba(30,18,49,.25);display:grid;place-items:center;z-index:99}
   .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);max-width:900px;width:92vw}
   .grid6{display:grid;gap:10px;grid-template-columns:repeat(6,1fr)}
-  @media (max-width:1100px){.kanban{grid-template-columns:repeat(3,1fr)}.grid6{grid-template-columns:repeat(3,1fr)}}
+  .grid2{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
+  @media (max-width:1200px){.kanban{grid-template-columns:repeat(3,1fr)}.grid6{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:760px){.kanban{grid-template-columns:1fr}nav{overflow:auto}.grid6{grid-template-columns:1fr}}
   .auth{display:flex;gap:8px;align-items:center}
   .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff}
-  /* Calendar lightweight styles reused */
   .calendar{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
   .cal-dow{background:#f9f4fc;color:var(--muted);padding:10px;font-weight:800;text-align:center;border-bottom:1px solid var(--border)}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
@@ -59,12 +60,15 @@
   .ev{display:block;margin-top:18px;font-size:12px;border-radius:8px;padding:6px 8px;border:1px solid var(--border)}
   .ev.college{background:#efe7ff}
   .ev.scholar{background:#ffe6ef}
+  .mini-row{display:flex;gap:8px;align-items:center;margin:6px 0}
+  .mini-row input[type="date"]{min-width:160px}
+  .xbtn{border:1px solid var(--border); background:#fff; border-radius:8px; padding:6px 8px; cursor:pointer}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap row">
-    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· v5.1 Firebase Sync</span></div>
+    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· v6.0 Firebase Sync</span></div>
     <nav id="tabs" class="spacer">
       <button class="tab active" data-tab="board">Board</button>
       <button class="tab" data-tab="table">Table</button>
@@ -121,7 +125,7 @@
           <th data-sort="app">App / Sponsor</th>
           <th data-sort="eaed">EA/ED</th>
           <th data-sort="rd">RD</th>
-          <th data-sort="scholar">Scholarship</th>
+          <th data-sort="scholar">Scholarships</th>
           <th data-sort="sdue">Scholarship Due</th>
           <th data-sort="due">Due</th>
           <th data-sort="status">Status</th>
@@ -151,6 +155,7 @@
 
   <!-- NOTES -->
   <section id="notes" class="wrap hidden">
+    <label for="notesArea">Notes</label>
     <textarea id="notesArea" rows="10" placeholder="Essay ideas, prompts, to-dos…"></textarea>
     <div class="row" style="margin-top:10px">
       <div class="muted">Autosaves; now also synced when signed in.</div>
@@ -170,16 +175,23 @@
       <button class="btn primary" onclick="saveEdit('college')">Save</button>
     </div>
     <div class="grid6">
-      <input id="cName" placeholder="College name">
-      <input id="cApp" placeholder="Application type (Common/UC/…)">
-      <input id="cEAED" type="date" placeholder="EA/ED due">
-      <input id="cRD" type="date" placeholder="RD due">
-      <input id="cScholar" placeholder="Scholarship(s)">
-      <input id="cSDue" type="date" placeholder="Scholarship due">
-      <select id="cStatus">
-        <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
-      </select>
-      <input id="cNotes" placeholder="Notes">
+      <div><label for="cName">College name</label><input id="cName" placeholder="e.g., Duke University"></div>
+      <div><label for="cApp">Application type</label><input id="cApp" placeholder="Common / UC / Coalition…"></div>
+      <div><label for="cEAED">EA/ED due</label><input id="cEAED" type="date"></div>
+      <div><label for="cRD">RD due</label><input id="cRD" type="date"></div>
+      <div><label for="cStatus">Status</label>
+        <select id="cStatus">
+          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
+        </select>
+      </div>
+      <div><label for="cNotes">Notes</label><input id="cNotes" placeholder="Notes"></div>
+    </div>
+
+    <div style="margin-top:14px">
+      <div style="font-weight:900; margin-bottom:6px">College Scholarships</div>
+      <div id="cSchList"></div>
+      <button class="btn" style="margin-top:8px" onclick="addSchRow()">+ Add Scholarship</button>
+      <p class="muted" style="margin-top:6px">Each scholarship row is specific to this college (Name + Due date). Add as many as you want.</p>
     </div>
   </div>
 </div>
@@ -193,14 +205,16 @@
       <button class="btn primary" onclick="saveEdit('scholar')">Save</button>
     </div>
     <div class="grid6">
-      <input id="sSponsor" placeholder="Sponsor">
-      <input id="sName" placeholder="Scholarship name">
-      <input id="sDue" type="date" placeholder="Due date">
-      <input id="sPrize" placeholder="Top prize (e.g., $25,000)">
-      <select id="sStatus">
-        <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
-      </select>
-      <input id="sNotes" placeholder="Notes (optional)">
+      <div><label for="sSponsor">Sponsor</label><input id="sSponsor" placeholder="e.g., Flinn Foundation"></div>
+      <div><label for="sName">Scholarship name</label><input id="sName" placeholder="e.g., Flinn Scholars"></div>
+      <div><label for="sDue">Due date</label><input id="sDue" type="date"></div>
+      <div><label for="sPrize">Top prize</label><input id="sPrize" placeholder="$25,000"></div>
+      <div><label for="sStatus">Status</label>
+        <select id="sStatus">
+          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
+        </select>
+      </div>
+      <div><label for="sNotes">Notes</label><input id="sNotes" placeholder="Notes (optional)"></div>
     </div>
   </div>
 </div>
@@ -211,7 +225,7 @@
     <h3 style="margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)">Bulk Import</h3>
     <p class="muted">Paste CSV/TSV with headers. Existing items remain.</p>
     <textarea id="bulkText" rows="10" placeholder="For colleges (headers):
-name,app,eaed,rd,scholar,sdue,status,notes
+name,app,eaed,rd,status,notes
 
 For scholarships (headers):
 sponsor,name,due,prize,status,notes"></textarea>
@@ -231,7 +245,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ====== PASTE YOUR OWN CONFIG HERE ====== */
+/* ====== Your Firebase config (kept) ====== */
 const firebaseConfig = {
   apiKey: "AIzaSyDHf23XSZsHW0q07iCM7PvJnOqNvPwTmYU",
   authDomain: "noor-college-list.firebaseapp.com",
@@ -241,7 +255,6 @@ const firebaseConfig = {
   appId: "1:622273585541:web:906be9a5e20842b9be64ec",
   measurementId: "G-7W78102QWH"
 };
-/* ======================================== */
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -249,10 +262,10 @@ const db   = getFirestore(app);
 
 /* -------- Helpers & DOM refs -------- */
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
-const localKey='noor_board_v5_1';
+const localKey='noor_board_v6_0';
 let currentUser=null, unsubscribeCloud=null, cloudDocRef=null, saveTimer=null;
 
-/* Bind modal elements explicitly (module scope doesn’t auto-expose IDs) */
+/* Bind modal elements explicitly */
 const editCollegeModal = document.getElementById('editCollegeModal');
 const editScholarModal = document.getElementById('editScholarModal');
 
@@ -260,10 +273,9 @@ const cName    = document.getElementById('cName');
 const cApp     = document.getElementById('cApp');
 const cEAED    = document.getElementById('cEAED');
 const cRD      = document.getElementById('cRD');
-const cScholar = document.getElementById('cScholar');
-const cSDue    = document.getElementById('cSDue');
 const cStatus  = document.getElementById('cStatus');
 const cNotes   = document.getElementById('cNotes');
+const cSchList = document.getElementById('cSchList');
 
 const sSponsor = document.getElementById('sSponsor');
 const sName    = document.getElementById('sName');
@@ -301,7 +313,7 @@ function seedColleges(){
     'University of Arizona','Arizona State University','Swarthmore College','Washington and Lee University','Emory University',
     'Georgia Tech','Carnegie Mellon University','Northwestern University','University of Chicago','Princeton University',
     'Harvard University','Yale University','Columbia University','Cornell University','Brown University','Stanford University'];
-  return names.map((n,i)=>({id:101+i,name:n,app:'',eaed:'',rd:'',scholar:'',sdue:'',status:i<8?'Considering':(i<16?'Applying':'Considering'),notes:''}));
+  return names.map((n,i)=>({id:101+i,name:n,app:'',eaed:'',rd:'',scholarships:[],status:i<8?'Considering':(i<16?'Applying':'Considering'),notes:''}));
 }
 function seedScholars(){
   return [
@@ -331,7 +343,7 @@ $('#tabs').addEventListener('click', (e)=>{
 $('#exportBtn').addEventListener('click', ()=>{
   const data=JSON.stringify(model.get(),null,2);
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
-  a.download='noor-board-v5.json'; a.click(); URL.revokeObjectURL(a.href);
+  a.download='noor-board-v6.json'; a.click(); URL.revokeObjectURL(a.href);
 });
 $('#importBtn').addEventListener('click', ()=>$('#importFile').click());
 $('#importFile').addEventListener('change', async(e)=>{const f=e.target.files[0]; if(!f) return; try{const text=await f.text(); const json=JSON.parse(text); model.set(json); renderAll(); if(currentUser) debounceSaveCloud(json); alert('Imported!');}catch{alert('Invalid file.');}});
@@ -344,13 +356,28 @@ function today(){const t=new Date(); t.setHours(0,0,0,0); return t; }
 function compareDates(a,b){ return (a?new Date(a).getTime():0) - (b?new Date(b).getTime():0); }
 function dueClass(d){ const dl=daysLeft(d); if(dl==null) return ''; if(dl<=7) return 'dueUrgent'; if(dl<=21) return 'dueSoon'; return ''; }
 
-const STATUSES=['Considering','Applying','Submitted','Interview','Decision'];
+const LANES=[
+  {key:'ConsideringCollege',     label:'Considering — College',      matches:(t,s)=>t==='College'&&s==='Considering'},
+  {key:'ConsideringScholarship', label:'Considering — Scholarship',  matches:(t,s)=>t==='Scholarship'&&s==='Considering'},
+  {key:'Applying',               label:'Applying',                   matches:(t,s)=>s==='Applying'},
+  {key:'Submitted',              label:'Submitted',                  matches:(t,s)=>s==='Submitted'},
+  {key:'Interview',              label:'Interview',                  matches:(t,s)=>s==='Interview'},
+  {key:'Decision',               label:'Decision',                   matches:(t,s)=>s==='Decision'}
+];
+
 function collegeCard(r){
+  const schTags = [];
+  const list = Array.isArray(r.scholarships) ? r.scholarships : [];
+  list.forEach(s=>{
+    const label = s.name ? s.name : 'Scholarship';
+    const date  = s.due ? ` (${fmt(s.due)})` : '';
+    schTags.push(`<span class="tag ${dueClass(s.due)}">${label}${date}</span>`);
+  });
   return `<div class="card college" draggable="true" data-type="college" data-id="${r.id}">
     <div class="title">${r.name||''}</div>
     <div class="rowtiny"><span class="tag">${r.app||'—'}</span></div>
     <div class="rowtiny"><span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt(r.eaed): '—'}</span><span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt(r.rd): '—'}</span></div>
-    <div class="rowtiny"><span class="tag">Scholarship: ${r.scholar||'—'}</span><span class="tag ${dueClass(r.sdue)}">Due: ${r.sdue? fmt(r.sdue): '—'}</span></div>
+    ${schTags.length? `<div class="rowtiny">${schTags.join('')}</div>` : ''}
     <div class="rowtiny">
       <div class="spacer"></div>
       <button class="btn" onclick="openEdit('college', ${r.id})">Edit</button>
@@ -370,19 +397,41 @@ function scholarCard(r){
   </div>`;
 }
 
-function matchesFilter(r, q){
+function matchesFilter(rec, q){
   if(!q) return true;
   q=q.toLowerCase();
-  const fields = r.type==='College' ? [r.name,r.app,r.scholar,r.status,r.notes] : [r.name,r.sponsor,r.prize,r.status,r.notes];
-  return fields.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q));
+  return rec.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q));
 }
 
 function renderBoard(){
   const d=model.get(); const q=($('#filterBoard').value||'').toLowerCase().trim();
-  const lanes={}; STATUSES.forEach(s=>lanes[s]=[]);
-  d.colleges.forEach(r=>{ const rec={type:'College',name:r.name,app:r.app,scholar:r.scholar,status:r.status,notes:r.notes}; if(matchesFilter(rec,q)) lanes[r.status||'Considering'].push(collegeCard(r));});
-  d.scholarships.forEach(r=>{ const rec={type:'Scholarship',name:r.name,sponsor:r.sponsor,prize:r.prize,status:r.status,notes:r.notes}; if(matchesFilter(rec,q)) lanes[r.status||'Considering'].push(scholarCard(r));});
-  $('#kanban').innerHTML=STATUSES.map(s=>`<div class="lane" data-lane="${s}"><h3>${s} <span class="count">(${lanes[s].length})</span></h3><div class="dropzone" data-zone="${s}">${lanes[s].join('')||'<div class="muted" style="padding:8px">No items</div>'}</div></div>`).join('');
+  const lanes = Object.fromEntries(LANES.map(l=>[l.key,[]]));
+
+  d.colleges.forEach(r=>{
+    const status=r.status||'Considering';
+    const schNames=(Array.isArray(r.scholarships)? r.scholarships.map(s=>s.name):[]);
+    const rec=[r.name,r.app,status,r.notes,...schNames];
+    if(!matchesFilter(rec,q)) return;
+    const laneKey = (status==='Considering')? 'ConsideringCollege' : status;
+    lanes[laneKey]?.push(collegeCard(r));
+  });
+
+  d.scholarships.forEach(r=>{
+    const status=r.status||'Considering';
+    const rec=[r.name,r.sponsor,r.prize,status,r.notes];
+    if(!matchesFilter(rec,q)) return;
+    const laneKey = (status==='Considering')? 'ConsideringScholarship' : status;
+    lanes[laneKey]?.push(scholarCard(r));
+  });
+
+  document.getElementById('kanban').innerHTML = LANES.map(l=>{
+    const items = lanes[l.key]||[];
+    return `<div class="lane" data-lane="${l.key}">
+      <h3>${l.label} <span class="count">(${items.length})</span></h3>
+      <div class="dropzone" data-zone="${l.key}">${items.join('')||'<div class="muted" style="padding:8px">No items</div>'}</div>
+    </div>`;
+  }).join('');
+
   enableDnD();
 }
 function enableDnD(){
@@ -395,30 +444,47 @@ function enableDnD(){
     z.addEventListener('drop', e=>{
       e.preventDefault();
       const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); if(!payload.id) return;
-      moveToStatus(payload.type, parseInt(payload.id,10), z.dataset.zone);
+      moveToLane(payload.type, parseInt(payload.id,10), z.dataset.zone);
     });
   });
 }
-
-function moveToStatus(type, id, status){
+function laneToStatus(type, laneKey){
+  if(laneKey==='ConsideringCollege' || laneKey==='ConsideringScholarship') return 'Considering';
+  return laneKey;
+}
+function moveToLane(type, id, laneKey){
+  const status = laneToStatus(type, laneKey);
   const d=model.get();
   if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges[i].status=status; }
   else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships[i].status=status; }
   model.set(d); renderBoard(); renderTable(); buildCalendar();
 }
 
+/* -------- Table -------- */
 function renderTable(sortKey, asc=true){
   const d=model.get(); const q=($('#filterTable').value||'').toLowerCase().trim();
-  let rows=[...d.colleges.map(c=>({type:'College',name:c.name,app:c.app,eaed:c.eaed,rd:c.rd,scholar:c.scholar,sdue:c.sdue,due:'',status:c.status,_id:c.id,_t:'college',notes:c.notes})),
-            ...d.scholarships.map(s=>({type:'Scholarship',name:s.name,app:s.sponsor,eaed:'',rd:'',scholar:'',sdue:'',due:s.due,status:s.status,_id:s.id,_t:'scholar',prize:s.prize,notes:s.notes}))];
+  let rows=[
+    ...d.colleges.map(c=>{
+      const schList = (Array.isArray(c.scholarships)&&c.scholarships.length)?
+        c.scholarships.map(s=>`${s.name||'Scholarship'}${s.due?` (${fmt(s.due)})`:''}`).join(' · ') : '';
+      const firstSchDue = (Array.isArray(c.scholarships)&&c.scholarships[0]?.due) ? c.scholarships[0].due : '';
+      return {type:'College',name:c.name,app:c.app,eaed:c.eaed,rd:c.rd,scholar:schList,sdue:firstSchDue,due:'',status:c.status,_id:c.id,_t:'college',notes:c.notes};
+    }),
+    ...d.scholarships.map(s=>({type:'Scholarship',name:s.name,app:s.sponsor,eaed:'',rd:'',scholar:'',sdue:'',due:s.due,status:s.status,_id:s.id,_t:'scholar',prize:s.prize,notes:s.notes}))
+  ];
   if(sortKey){
     rows.sort((a,b)=>{
       if(['eaed','rd','sdue','due'].includes(sortKey)) return asc? compareDates(a[sortKey],b[sortKey]) : compareDates(b[sortKey],a[sortKey]);
       return asc? (''+(a[sortKey]||'')).localeCompare(''+(b[sortKey]||'')) : (''+(b[sortKey]||'')).localeCompare(''+(a[sortKey]||'')); 
     });
   }
-  rows=rows.filter(r=> matchesFilter(r,q));
-  $('#collegeTable tbody').innerHTML = rows.map(r=>`
+  rows = rows.filter(r=>{
+    const rec = r.type==='College'
+      ? [r.name,r.app,r.scholar,r.status,r.notes]
+      : [r.name,r.app,r.prize,r.status,r.notes];
+    return matchesFilter(rec,q);
+  });
+  document.querySelector('#collegeTable tbody').innerHTML = rows.map(r=>`
     <tr>
       <td>${r.type}</td>
       <td>${r.name||''}</td>
@@ -443,7 +509,7 @@ function buildCalendar(){
   const d=model.get();
   if(!calState) calState={...d.calendar}; else d.calendar=calState, model.set(d);
   const {year, month} = calState;
-  const grid = $('#calGrid'); const title = $('#calTitle');
+  const grid = document.getElementById('calGrid'); const title = document.getElementById('calTitle');
   const monthStart = new Date(year, month, 1); const monthEnd = new Date(year, month+1, 0);
   title.textContent = monthStart.toLocaleDateString(undefined, {month:'long', year:'numeric'});
   grid.innerHTML = '';
@@ -454,26 +520,45 @@ function buildCalendar(){
     const el=cell(day);
     const add=(type,label)=>{ const s=document.createElement('span'); s.className='ev '+type; s.innerHTML='<b>'+label+'</b>'; el.appendChild(s); };
     const dta=model.get();
-    dta.colleges.forEach(c=>{ if(c.eaed===dateISO) add('college', `${c.name} (EA/ED)`); if(c.rd===dateISO) add('college', `${c.name} (RD)`); if(c.sdue===dateISO) add('college', `${c.name} (Scholarship)`); });
+    dta.colleges.forEach(c=>{
+      if(c.eaed===dateISO) add('college', `${c.name} (EA/ED)`);
+      if(c.rd===dateISO) add('college', `${c.name} (RD)`);
+      if(Array.isArray(c.scholarships)){
+        c.scholarships.forEach(s=>{ if(s.due===dateISO) add('college', `${c.name}: ${s.name}`); });
+      }
+    });
     dta.scholarships.forEach(s=>{ if(s.due===dateISO) add('scholar', `${s.sponsor}: ${s.name}`); });
     grid.appendChild(el);
   }
   function cell(day){ const d=document.createElement('div'); d.className='cal-cell'; d.innerHTML = day? `<div class="cal-date">${day}</div>`: ''; return d; }
 }
-$('#prevMonth').onclick = ()=>{ calState.month--; if(calState.month<0){calState.month=11; calState.year--; } buildCalendar(); };
-$('#nextMonth').onclick = ()=>{ calState.month++; if(calState.month>11){calState.month=0; calState.year++; } buildCalendar(); };
-$('#todayBtn').onclick = ()=>{ const t=new Date(); calState.year=t.getFullYear(); calState.month=t.getMonth(); buildCalendar(); };
+document.getElementById('prevMonth').onclick = ()=>{ calState.month--; if(calState.month<0){calState.month=11; calState.year--; } buildCalendar(); };
+document.getElementById('nextMonth').onclick = ()=>{ calState.month++; if(calState.month>11){calState.month=0; calState.year++; } buildCalendar(); };
+document.getElementById('todayBtn').onclick = ()=>{ const t=new Date(); calState.year=t.getFullYear(); calState.month=t.getMonth(); buildCalendar(); };
 
 /* -------- CRUD + Modals -------- */
 let editingType=null, editingId=null;
 document.getElementById('addCollegeBtn').addEventListener('click', ()=>openEdit('college', null));
 document.getElementById('addScholarBtn').addEventListener('click', ()=>openEdit('scholar', null));
 
+function rowHTML(name='', due=''){
+  return `<div class="mini-row">
+    <input class="sch-name" placeholder="Scholarship name" value="${name?name.replace(/"/g,'&quot;'):''}">
+    <input class="sch-due" type="date" value="${due||''}">
+    <button class="xbtn" onclick="this.parentElement.remove()">Remove</button>
+  </div>`;
+}
+function renderSchRows(list){
+  cSchList.innerHTML = (list && list.length) ? list.map(s=>rowHTML(s.name||'', s.due||'')).join('') : '';
+}
+function addSchRow(){ cSchList.insertAdjacentHTML('beforeend', rowHTML()); }
+
 function openEdit(type, id){
   editingType=type; editingId=id; const d=model.get();
   if(type==='college'){
-    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholar:'',sdue:'',status:'Considering',notes:''} : d.colleges.find(x=>x.id===id);
-    cName.value=r.name||''; cApp.value=r.app||''; cEAED.value=r.eaed||''; cRD.value=r.rd||''; cScholar.value=r.scholar||''; cSDue.value=r.sdue||''; cStatus.value=r.status||'Considering'; cNotes.value=r.notes||'';
+    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholarships:[],status:'Considering',notes:''} : d.colleges.find(x=>x.id===id);
+    cName.value=r.name||''; cApp.value=r.app||''; cEAED.value=r.eaed||''; cRD.value=r.rd||''; cStatus.value=r.status||'Considering'; cNotes.value=r.notes||'';
+    renderSchRows(Array.isArray(r.scholarships)? r.scholarships : []);
     editCollegeModal.classList.remove('hidden');
   }else{
     const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:''} : d.scholarships.find(x=>x.id===id);
@@ -483,10 +568,23 @@ function openEdit(type, id){
 }
 function closeEdit(type){ (type==='college'?editCollegeModal:editScholarModal).classList.add('hidden'); }
 
+function collectSchRows(){
+  return Array.from(cSchList.querySelectorAll('.mini-row')).map(row=>{
+    const name = row.querySelector('.sch-name').value.trim();
+    const due  = row.querySelector('.sch-due').value;
+    if(!name && !due) return null;
+    return {name, due};
+  }).filter(Boolean);
+}
+
 function saveEdit(type){
   const d=model.get();
   if(type==='college'){
-    const obj={name:cName.value.trim(), app:cApp.value.trim(), eaed:cEAED.value, rd:cRD.value, scholar:cScholar.value.trim(), sdue:cSDue.value, status:cStatus.value, notes:cNotes.value.trim()};
+    const obj={
+      name:cName.value.trim(), app:cApp.value.trim(), eaed:cEAED.value, rd:cRD.value,
+      scholarships: collectSchRows(),
+      status:cStatus.value, notes:cNotes.value.trim()
+    };
     if(!obj.name){ alert('College name is required.'); return; }
     if(editingId==null){ obj.id=++d.seqC; d.colleges.push(obj); } else { const i=d.colleges.findIndex(x=>x.id===editingId); if(i>=0) d.colleges[i]=Object.assign({id:editingId}, obj); }
   }else{
@@ -522,8 +620,7 @@ function doBulk(){
         app:o.app||o['application type']||'',
         eaed:o.eaed||o['ea/ed']||o['eaed']||'',
         rd:o.rd||o['rd']||o['rd due']||'',
-        scholar:o.scholar||o['scholarship']||'',
-        sdue:o.sdue||o['scholarship due']||'',
+        scholarships: [],
         status:o.status||'Considering',
         notes:o.notes||''
       });
@@ -550,11 +647,11 @@ function renderNotes(){ const d=model.get(); notesArea.value=d.notes||''; }
 notesArea.addEventListener('input', ()=>{ const d=model.get(); d.notes=notesArea.value; model.set(d); });
 
 /* -------- Render All -------- */
-function renderAll(){ renderBoard(); renderTable(); renderNotes(); if($('.tab.active')?.dataset.tab==='calendar') buildCalendar(); }
+function renderAll(){ renderBoard(); renderTable(); renderNotes(); if(document.querySelector('.tab.active')?.dataset.tab==='calendar') buildCalendar(); }
 model.init(); renderAll();
 
 /* -------- Auth + Firestore sync -------- */
-const userBadge=$('#userBadge'), loginBtn=$('#loginBtn'), logoutBtn=$('#logoutBtn'), syncState=$('#syncState'), firstSyncNote=$('#firstSyncNote');
+const userBadge=document.getElementById('userBadge'), loginBtn=document.getElementById('loginBtn'), logoutBtn=document.getElementById('logoutBtn'), syncState=document.getElementById('syncState'), firstSyncNote=document.getElementById('firstSyncNote');
 loginBtn.onclick = async()=>{ try{ await signInWithPopup(auth, new GoogleAuthProvider()); }catch(e){ alert('Login failed: '+e.message); } };
 logoutBtn.onclick = ()=> signOut(auth);
 
@@ -613,7 +710,7 @@ function debounceSaveCloud(data){
 }
 
 /* -------- expose functions for inline onclick (module scope fix) -------- */
-Object.assign(window, { openEdit, closeEdit, saveEdit, delRow, moveToStatus, openBulk, closeBulk, doBulk });
+Object.assign(window, { openEdit, closeEdit, saveEdit, delRow, addSchRow, openBulk, closeBulk, doBulk });
 
 </script>
 </body>
