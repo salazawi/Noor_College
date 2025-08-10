@@ -288,6 +288,7 @@ sponsor,name,due,prize,status,notes"></textarea>
 
 <footer class="wrap muted" style="padding:28px 16px">Built for Noor with ❤️ — cloud sync when signed in; otherwise local-only.</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>  
 <script type="module">
 /* -------- Firebase SDK -------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -544,18 +545,25 @@ function renderBoard(){
   enableDnD();
 }
 function enableDnD(){
-  $$('.card').forEach(c=>{
-    c.addEventListener('dragstart', e=>{ c.classList.add('dragging'); e.dataTransfer.setData('text/plain', JSON.stringify({type:c.dataset.type, id:c.dataset.id})); });
-    c.addEventListener('dragend', ()=> c.classList.remove('dragging'));
-  });
   $$('.dropzone').forEach(z=>{
-    z.addEventListener('dragover', e=> e.preventDefault());
-    z.addEventListener('drop', e=>{
-      e.preventDefault();
-      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); if(!payload.id) return;
-      moveToLane(payload.type, parseInt(payload.id,10), z.dataset.zone);
+    Sortable.create(z, {
+      group: 'kanban',
+      animation: 150,
+      draggable: '.card',
+      handle: '.title',           // drag by the title area (less accidental drags)
+      filter: '.iconbtn,button',  // clicking icons/buttons won't start a drag
+      onAdd: onMoved,
+      onUpdate: onMoved
     });
   });
+
+  function onMoved(evt){
+    const card   = evt.item;
+    const type   = card.dataset.type;          // 'college' | 'scholar'
+    const id     = parseInt(card.dataset.id,10);
+    const laneKey= evt.to.dataset.zone;        // e.g., 'Applying'
+    moveToLane(type, id, laneKey);             // already defined in your file
+  }
 }
 function laneToStatus(type, laneKey){
   if(laneKey==='ConsideringCollege' || laneKey==='ConsideringScholarship') return 'Considering';
