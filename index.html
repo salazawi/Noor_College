@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Noor’s College Board — v6.0 (Split Considering + College Scholarships + Labels)</title>
+<title>Noor’s College Board — v6.2.6 (spacing fix + preload)</title>
 <meta name="theme-color" content="#faf7fb">
 <style>
   :root{--bg:#faf7fb;--ink:#1e1231;--muted:#615e76;--panel:#fff;--border:#eadff1;--shadow:0 6px 20px rgba(30,18,49,.08);
         --lane-bg:#fff;--lane-border:#eadff1;--college-bg:#efe7ff;--college-border:#d7c8ff;--scholar-bg:#ffe6ef;--scholar-border:#ffc2d4;
         --tag-bg:#f5edf9;--tag-border:#eadff1;--accent-pink:#ff6fa3;--accent-green:#2ec4a6;--accent-purple:#7b61ff;
-        --soon:#ffb020;--urgent:#ff6b6b}
+        --soon:#ffb020;--urgent:#ff6b6b;--danger:#ff4d6d}
   *{box-sizing:border-box} html,body{height:100%}
   body{margin:0;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"SF Pro","Segoe UI",Roboto,Helvetica,Arial;background:var(--bg)}
   header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border)}
@@ -21,7 +21,7 @@
   .tab{appearance:none;border:1px solid var(--border);background:var(--panel);color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:var(--shadow)}
   .tab.active{border-color:transparent;background:linear-gradient(#fff,#f7f2fb)}
   .spacer{flex:1}
-  .btn{appearance:none;border:1px solid var(--border);cursor:pointer;font-weight:800;border-radius:10px;padding:10px 14px;background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+  .btn{appearance:none;border:1px solid var(--border);cursor:pointer;font-weight:800;border-radius:10px;padding:10px 14px;background:#fff;color:var(--ink);box-shadow:var(--shadow);white-space:nowrap}
   .btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--accent-purple),#b39dff);color:#fff}
   .btn.green{border-color:transparent;background:linear-gradient(135deg,var(--accent-green),#8be3d3);color:#0e2d29}
   .btn.pink{border-color:transparent;background:linear-gradient(135deg,var(--accent-pink),#ffb3cd);color:#5b0d27}
@@ -29,16 +29,36 @@
   input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);outline:none;background:#fff;color:var(--ink);font-size:16px}
   input:focus,select:focus,textarea:focus{border-color:var(--accent-purple)}
   label{font-size:12px;color:var(--muted);font-weight:700;display:block;margin:6px 0 4px 0}
-  .kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:flex-start}
+  .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+  .tool-left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .tool-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;white-space:nowrap}
+  .toggle{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--muted)}
+  .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;align-items:flex-start}
   .lane{background:var(--lane-bg);border:1px solid var(--lane-border);border-radius:14px;padding:12px;min-height:220px;box-shadow:var(--shadow)}
   .lane h3{margin:0 0 8px 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .lane .count{font-weight:900;color:var(--accent-purple)}.dropzone{min-height:160px}
-  .card{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;box-shadow:var(--shadow);cursor:grab}
+  .card{position:relative;border:1px solid var(--border);border-radius:12px;padding:12px 12px 76px 12px;margin-bottom:12px;box-shadow:var(--shadow);cursor:grab}
+  /* bottom padding is 76px to ensure delete icon never overlaps content; increased on small screens below */
   .card.college{background:var(--college-bg);border-color:var(--college-border)}.card.scholar{background:var(--scholar-bg);border-color:var(--scholar-border)}
-  .card.dragging{opacity:.7}.title{font-weight:900}
-  .rowtiny{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px}
+  .card.dragging{opacity:.75}.title{font-weight:900;margin-bottom:6px;padding-right:56px}
+  .rowtiny{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px}
   .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--tag-border);background:var(--tag-bg);color:var(--muted)}
+  .tag.badge{font-weight:800}
   .dueSoon{border-color:var(--soon);color:var(--soon);background:#fff7eb}.dueUrgent{border-color:var(--urgent);color:var(--urgent);background:#fff1f1}
+  .actions-edit{position:absolute;right:8px;top:8px}
+  .actions-del{position:absolute;right:8px;bottom:8px}
+  .iconbtn{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:#fff;display:grid;place-items:center;box-shadow:var(--shadow);cursor:pointer}
+  .iconbtn:hover{transform:translateY(-1px)}
+  .iconbtn svg{width:18px;height:18px}
+  .icon-danger{border-color:#ffd1db;background:#fff6f8}
+  .icon-danger svg{stroke:var(--danger)}
+  .icon-edit svg{stroke:var(--muted)}
+  .sch-group{margin-top:8px;border:1px dashed var(--college-border);border-radius:10px;padding:8px;background:rgba(255,255,255,.35)}
+  .sch-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0}
+  .sch-chip{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--tag-border);background:var(--tag-bg);color:var(--muted)}
+  .sch-date{font-size:12px}
+  .sch-date.urgent{color:var(--urgent);font-weight:800}
   table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
   th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
   thead th{color:var(--muted);font-weight:800;user-select:none;cursor:pointer;background:#f9f4fc}
@@ -47,10 +67,14 @@
   .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);max-width:900px;width:92vw}
   .grid6{display:grid;gap:10px;grid-template-columns:repeat(6,1fr)}
   .grid2{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
-  @media (max-width:1200px){.kanban{grid-template-columns:repeat(3,1fr)}.grid6{grid-template-columns:repeat(3,1fr)}}
-  @media (max-width:760px){.kanban{grid-template-columns:1fr}nav{overflow:auto}.grid6{grid-template-columns:1fr}}
+  @media (max-width:1200px){.kanban{grid-template-columns:1fr 1fr 1fr}.grid6{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:760px){
+    .kanban{grid-template-columns:1fr}
+    .grid6{grid-template-columns:1fr}
+    .tool-right{width:100%}
+    .card{padding-bottom:92px} /* extra space on mobile */
+  }
   .auth{display:flex;gap:8px;align-items:center}
-  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff}
   .calendar{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
   .cal-dow{background:#f9f4fc;color:var(--muted);padding:10px;font-weight:800;text-align:center;border-bottom:1px solid var(--border)}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
@@ -60,15 +84,16 @@
   .ev{display:block;margin-top:18px;font-size:12px;border-radius:8px;padding:6px 8px;border:1px solid var(--border)}
   .ev.college{background:#efe7ff}
   .ev.scholar{background:#ffe6ef}
-  .mini-row{display:flex;gap:8px;align-items:center;margin:6px 0}
-  .mini-row input[type="date"]{min-width:160px}
-  .xbtn{border:1px solid var(--border); background:#fff; border-radius:8px; padding:6px 8px; cursor:pointer}
+  /* Inactive style for removed */
+  .inactive{opacity:.55;filter:grayscale(.1)}
+  .inactive .title{color:#5d5970}
+  .inactive{border-style:dashed}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap row">
-    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· v6.0 Firebase Sync</span></div>
+    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· v6.2.6 Firebase Sync</span></div>
     <nav id="tabs" class="spacer">
       <button class="tab active" data-tab="board">Board</button>
       <button class="tab" data-tab="table">Table</button>
@@ -85,16 +110,20 @@
 
 <main>
   <section class="wrap">
-    <div class="row muted" style="gap:16px;align-items:flex-start">
-      <div class="pill">Cloud sync: <b id="syncState">offline</b></div>
-      <div id="firstSyncNote" class="hidden">First sign-in will ask if you want to <b>upload</b> your current data to the cloud or <b>pull</b> existing cloud data down.</div>
-      <div class="spacer"></div>
-      <button id="exportBtn" class="btn">Export</button>
-      <input type="file" id="importFile" class="hidden" accept="application/json">
-      <button id="importBtn" class="btn">Import</button>
-      <button id="seedBtn" class="btn green">Load Sample Data</button>
-      <button id="addCollegeBtn" class="btn primary">+ College</button>
-      <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
+    <div class="toolbar">
+      <div class="tool-left">
+        <div class="pill">Cloud sync: <b id="syncState">offline</b></div>
+        <label class="toggle"><input id="hideRemoved" type="checkbox"> Hide removed</label>
+        <div id="firstSyncNote" class="muted hidden">First sign-in will ask if you want to <b>upload</b> your current data to the cloud or <b>pull</b> existing cloud data down.</div>
+      </div>
+      <div class="tool-right">
+        <button id="exportBtn" class="btn">Export</button>
+        <input type="file" id="importFile" class="hidden" accept="application/json">
+        <button id="importBtn" class="btn">Import</button>
+        <button id="seedBtn" class="btn green">Load Sample Data</button>
+        <button id="addCollegeBtn" class="btn primary">+ College</button>
+        <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
+      </div>
     </div>
   </section>
 
@@ -181,7 +210,7 @@
       <div><label for="cRD">RD due</label><input id="cRD" type="date"></div>
       <div><label for="cStatus">Status</label>
         <select id="cStatus">
-          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
+          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Decision</option>
         </select>
       </div>
       <div><label for="cNotes">Notes</label><input id="cNotes" placeholder="Notes"></div>
@@ -191,7 +220,18 @@
       <div style="font-weight:900; margin-bottom:6px">College Scholarships</div>
       <div id="cSchList"></div>
       <button class="btn" style="margin-top:8px" onclick="addSchRow()">+ Add Scholarship</button>
-      <p class="muted" style="margin-top:6px">Each scholarship row is specific to this college (Name + Due date). Add as many as you want.</p>
+    </div>
+
+    <div class="grid2" style="margin-top:14px">
+      <div>
+        <label><input type="checkbox" id="cInterviewChk"> Interview</label>
+        <label for="cInterviewDate">Interview date (optional)</label>
+        <input id="cInterviewDate" type="date">
+      </div>
+      <div>
+        <label><input type="checkbox" id="cRemovedChk"> Removed from consideration</label>
+        <p class="muted" style="margin:6px 0 0 0">Only used in Considering lanes; you can hide removed cards with the toggle.</p>
+      </div>
     </div>
   </div>
 </div>
@@ -211,10 +251,20 @@
       <div><label for="sPrize">Top prize</label><input id="sPrize" placeholder="$25,000"></div>
       <div><label for="sStatus">Status</label>
         <select id="sStatus">
-          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Interview</option><option>Decision</option>
+          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Decision</option>
         </select>
       </div>
       <div><label for="sNotes">Notes</label><input id="sNotes" placeholder="Notes (optional)"></div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div>
+        <label><input type="checkbox" id="sInterviewChk"> Interview</label>
+        <label for="sInterviewDate">Interview date (optional)</label>
+        <input id="sInterviewDate" type="date">
+      </div>
+      <div>
+        <label><input type="checkbox" id="sRemovedChk"> Removed from consideration</label>
+      </div>
     </div>
   </div>
 </div>
@@ -226,7 +276,6 @@
     <p class="muted">Paste CSV/TSV with headers. Existing items remain.</p>
     <textarea id="bulkText" rows="10" placeholder="For colleges (headers):
 name,app,eaed,rd,status,notes
-
 For scholarships (headers):
 sponsor,name,due,prize,status,notes"></textarea>
     <div class="row" style="margin-top:10px">
@@ -245,7 +294,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ====== Your Firebase config (kept) ====== */
+/* ====== Firebase config (your project) ====== */
 const firebaseConfig = {
   apiKey: "AIzaSyDHf23XSZsHW0q07iCM7PvJnOqNvPwTmYU",
   authDomain: "noor-college-list.firebaseapp.com",
@@ -262,10 +311,9 @@ const db   = getFirestore(app);
 
 /* -------- Helpers & DOM refs -------- */
 const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
-const localKey='noor_board_v6_0';
+const localKey='noor_board_v6_2_6';
 let currentUser=null, unsubscribeCloud=null, cloudDocRef=null, saveTimer=null;
 
-/* Bind modal elements explicitly */
 const editCollegeModal = document.getElementById('editCollegeModal');
 const editScholarModal = document.getElementById('editScholarModal');
 
@@ -276,6 +324,9 @@ const cRD      = document.getElementById('cRD');
 const cStatus  = document.getElementById('cStatus');
 const cNotes   = document.getElementById('cNotes');
 const cSchList = document.getElementById('cSchList');
+const cInterviewChk  = document.getElementById('cInterviewChk');
+const cInterviewDate = document.getElementById('cInterviewDate');
+const cRemovedChk    = document.getElementById('cRemovedChk');
 
 const sSponsor = document.getElementById('sSponsor');
 const sName    = document.getElementById('sName');
@@ -283,8 +334,12 @@ const sDue     = document.getElementById('sDue');
 const sPrize   = document.getElementById('sPrize');
 const sStatus  = document.getElementById('sStatus');
 const sNotes   = document.getElementById('sNotes');
+const sInterviewChk  = document.getElementById('sInterviewChk');
+const sInterviewDate = document.getElementById('sInterviewDate');
+const sRemovedChk    = document.getElementById('sRemovedChk');
 
 const notesArea = document.getElementById('notesArea');
+const hideRemoved = document.getElementById('hideRemoved');
 
 /* -------- Data model (local + cloud) -------- */
 const model={
@@ -300,12 +355,15 @@ const model={
     if(!Array.isArray(d.scholarships)) d.scholarships=seedScholars();
     if(!d.notes) d.notes='';
     if(!d.calendar){ d.calendar={year:new Date().getFullYear(), month:new Date().getMonth()}; }
+    if(!d.prefs) d.prefs={hideRemoved:false};
+    hideRemoved.checked = !!d.prefs.hideRemoved;
     model.save(d,false);
   },
   get(){return model.load();},
   set(d){model.save(d);}
 };
 
+/* Sample data (preloaded) */
 function seedColleges(){
   const names=['Duke University','Vanderbilt University','Rice University','University of Toronto','University of Notre Dame',
     'UCLA','UC Berkeley','University of Virginia','UNC Chapel Hill','UC Santa Barbara','UC San Diego','Boston College',
@@ -313,20 +371,17 @@ function seedColleges(){
     'University of Arizona','Arizona State University','Swarthmore College','Washington and Lee University','Emory University',
     'Georgia Tech','Carnegie Mellon University','Northwestern University','University of Chicago','Princeton University',
     'Harvard University','Yale University','Columbia University','Cornell University','Brown University','Stanford University'];
-  return names.map((n,i)=>({id:101+i,name:n,app:'',eaed:'',rd:'',scholarships:[],status:i<8?'Considering':(i<16?'Applying':'Considering'),notes:''}));
+  const sample = names.map((n,i)=>({ id:101+i,name:n,app:'',eaed:'',rd:'',scholarships:[], status:i<8?'Considering':(i<16?'Applying':'Considering'), notes:'', interview:false, interviewDate:'', removed:false }));
+  // add sample scholarships for first few
+  sample[0].scholarships=[{name:'JB Duke',due:'2025-09-16'},{name:'AB Duke',due:'2025-10-15'},{name:'Robertson',due:'2025-11-18'}];
+  sample[1].scholarships=[{name:'A',due:'2025-08-27'},{name:'B',due:'2025-10-21'}];
+  return sample;
 }
 function seedScholars(){
   return [
-    {id:1001, sponsor:'Flinn Foundation', name:'Flinn Scholars', due:'2025-10-01', prize:'Full ride', status:'Considering', notes:''},
-    {id:1002, sponsor:'VFW', name:'Voice of Democracy', due:'2025-10-31', prize:'$35,000', status:'Considering', notes:''},
-    {id:1003, sponsor:'Elks', name:'Most Valuable Student', due:'2025-11-12', prize:'$4k–$30k', status:'Considering', notes:''},
-    {id:1004, sponsor:'Taco Bell', name:'Live Más Scholarship', due:'2026-01-08', prize:'$25,000', status:'Considering', notes:''},
-    {id:1005, sponsor:'UCB Family', name:'Epilepsy Scholarship', due:'2025-03-15', prize:'$5k–$10k', status:'Considering', notes:''},
-    {id:1006, sponsor:'Scottsdale Charros', name:'Scottsdale Champion Scholarship', due:'2025-02-28', prize:'—', status:'Considering', notes:''},
-    {id:1007, sponsor:'Credit Union West', name:'Scholarship', due:'2025-03-31', prize:'$2,000', status:'Considering', notes:''},
-    {id:1008, sponsor:'Bryan Cameron', name:'Cameron Impact Scholarship', due:'2025-05-21', prize:'—', status:'Considering', notes:''},
-    {id:1009, sponsor:'Four Star Leadership', name:'with Gen. Tommy Franks', due:'2025-04-04', prize:'$2.5k–$5k', status:'Considering', notes:''},
-    {id:1010, sponsor:'Stossel in the Classroom', name:'Essay Contest', due:'2025-03-12', prize:'—', status:'Considering', notes:''}
+    {id:1001, sponsor:'Flinn Foundation', name:'Flinn Scholars', due:'2025-09-29', prize:'Full ride', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false},
+    {id:1002, sponsor:'VFW', name:'Voice of Democracy', due:'2025-10-31', prize:'$35,000', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false},
+    {id:1003, sponsor:'Elks', name:'Most Valuable Student', due:'2025-11-12', prize:'$4k–$30k', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false}
   ];
 }
 
@@ -343,57 +398,108 @@ $('#tabs').addEventListener('click', (e)=>{
 $('#exportBtn').addEventListener('click', ()=>{
   const data=JSON.stringify(model.get(),null,2);
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
-  a.download='noor-board-v6.json'; a.click(); URL.revokeObjectURL(a.href);
+  a.download='noor-board-v6.2.6.json'; a.click(); URL.revokeObjectURL(a.href);
 });
 $('#importBtn').addEventListener('click', ()=>$('#importFile').click());
 $('#importFile').addEventListener('change', async(e)=>{const f=e.target.files[0]; if(!f) return; try{const text=await f.text(); const json=JSON.parse(text); model.set(json); renderAll(); if(currentUser) debounceSaveCloud(json); alert('Imported!');}catch{alert('Invalid file.');}});
 document.getElementById('seedBtn').addEventListener('click', ()=>{ if(confirm('Replace current data with sample data?')){ model.init(); renderAll(); if(currentUser) debounceSaveCloud(model.get()); }});
+hideRemoved.addEventListener('change', ()=>{ const d=model.get(); d.prefs=d.prefs||{}; d.prefs.hideRemoved=hideRemoved.checked; model.set(d); renderBoard(); });
 
-/* -------- Board / Table rendering -------- */
+/* -------- Date helpers -------- */
+function pad2(v){return String(v).padStart(2,'0');}
+function normalizeDate(s){
+  if(!s) return '';
+  s = String(s).trim();
+  if(!s) return '';
+  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(m){
+    let [_,mm,dd,yy] = m;
+    if(yy.length===2) yy = '20'+yy;
+    return `${yy}-${pad2(mm)}-${pad2(dd)}`;
+  }
+  const m2 = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if(m2){
+    const [_,y,mn,d]=m2;
+    return `${y}-${pad2(mn)}-${pad2(d)}`;
+  }
+  const d = new Date(s);
+  if(!isNaN(d)) return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  return '';
+}
+function fmt2(d){ // mm/dd/yy
+  if(!d) return '';
+  const dt=new Date(d);
+  if(isNaN(dt)) return '';
+  const yy=String(dt.getFullYear()).slice(-2);
+  return `${pad2(dt.getMonth()+1)}/${pad2(dt.getDate())}/${yy}`;
+}
 function fmt(d){return d? new Date(d).toLocaleDateString():'';}
 function daysLeft(d){ if(!d) return null; return Math.ceil((new Date(d)-today())/86400000); }
 function today(){const t=new Date(); t.setHours(0,0,0,0); return t; }
 function compareDates(a,b){ return (a?new Date(a).getTime():0) - (b?new Date(b).getTime():0); }
 function dueClass(d){ const dl=daysLeft(d); if(dl==null) return ''; if(dl<=7) return 'dueUrgent'; if(dl<=21) return 'dueSoon'; return ''; }
 
+/* -------- Lanes -------- */
 const LANES=[
-  {key:'ConsideringCollege',     label:'Considering — College',      matches:(t,s)=>t==='College'&&s==='Considering'},
-  {key:'ConsideringScholarship', label:'Considering — Scholarship',  matches:(t,s)=>t==='Scholarship'&&s==='Considering'},
-  {key:'Applying',               label:'Applying',                   matches:(t,s)=>s==='Applying'},
-  {key:'Submitted',              label:'Submitted',                  matches:(t,s)=>s==='Submitted'},
-  {key:'Interview',              label:'Interview',                  matches:(t,s)=>s==='Interview'},
-  {key:'Decision',               label:'Decision',                   matches:(t,s)=>s==='Decision'}
+  {key:'ConsideringCollege',     label:'Considering — College'},
+  {key:'ConsideringScholarship', label:'Considering — Scholarship'},
+  {key:'Applying',               label:'Applying'},
+  {key:'Submitted',              label:'Submitted'},
+  {key:'Decision',               label:'Decision'}
 ];
 
-function collegeCard(r){
-  const schTags = [];
-  const list = Array.isArray(r.scholarships) ? r.scholarships : [];
-  list.forEach(s=>{
-    const label = s.name ? s.name : 'Scholarship';
-    const date  = s.due ? ` (${fmt(s.due)})` : '';
-    schTags.push(`<span class="tag ${dueClass(s.due)}">${label}${date}</span>`);
-  });
-  return `<div class="card college" draggable="true" data-type="college" data-id="${r.id}">
+/* -------- Icons -------- */
+function iconPencil(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+  </svg>`;
+}
+function iconTrash(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+  </svg>`;
+}
+
+/* -------- Cards -------- */
+function badgeInterview(rec){
+  if(!rec.interview) return '';
+  const d = rec.interviewDate ? ` (${fmt2(rec.interviewDate)})` : '';
+  return `<span class="tag badge">Interview${d}</span>`;
+}
+function badgeRemoved(rec, laneKey){
+  if(!(rec.removed && (laneKey==='ConsideringCollege' || laneKey==='ConsideringScholarship'))) return '';
+  return `<span class="tag badge">Removed</span>`;
+}
+
+function collegeCard(r, laneKey){
+  const list = Array.isArray(r.scholarships) ? [...r.scholarships] : [];
+  list.sort((a,b)=> compareDates(a.due,b.due));
+  const schRows = list.map(s=>{
+    const name = s.name?.trim() || 'Scholarship';
+    const due  = s.due ? fmt2(s.due) : '';
+    const urgent = daysLeft(s.due)!=null && daysLeft(s.due)<=14;
+    return `<div class="sch-row"><span class="sch-chip">${name}</span><span class="sch-date ${urgent?'urgent':''}">${due}</span></div>`;
+  }).join('');
+  const badges = [badgeInterview(r), badgeRemoved(r, laneKey)].filter(Boolean).join(' ');
+  const inactiveClass = (r.removed && (laneKey==='ConsideringCollege')) ? 'inactive' : '';
+  return `<div class="card college ${inactiveClass}" draggable="true" data-type="college" data-id="${r.id}">
     <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.app||'—'}</span></div>
-    <div class="rowtiny"><span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt(r.eaed): '—'}</span><span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt(r.rd): '—'}</span></div>
-    ${schTags.length? `<div class="rowtiny">${schTags.join('')}</div>` : ''}
-    <div class="rowtiny">
-      <div class="spacer"></div>
-      <button class="btn" onclick="openEdit('college', ${r.id})">Edit</button>
-      <button class="btn" onclick="delRow('college', ${r.id})">Delete</button>
-    </div>
+    <div class="rowtiny"><span class="tag">${r.app||'—'}</span>${badges? ' '+badges: ''}</div>
+    <div class="rowtiny"><span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt2(r.eaed): '—'}</span><span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt2(r.rd): '—'}</span></div>
+    ${schRows? `<div class="sch-group">${schRows}</div>` : ''}
+    <div class="actions-edit"><button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('college', ${r.id})">${iconPencil()}</button></div>
+    <div class="actions-del"><button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('college', ${r.id})">${iconTrash()}</button></div>
   </div>`;
 }
-function scholarCard(r){
-  return `<div class="card scholar" draggable="true" data-type="scholar" data-id="${r.id}">
+function scholarCard(r, laneKey){
+  const badges = [badgeInterview(r), badgeRemoved(r, laneKey)].filter(Boolean).join(' ');
+  const inactiveClass = (r.removed && (laneKey==='ConsideringScholarship')) ? 'inactive' : '';
+  return `<div class="card scholar ${inactiveClass}" draggable="true" data-type="scholar" data-id="${r.id}">
     <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span></div>
-    <div class="rowtiny">
-      <div class="spacer"></div>
-      <button class="btn" onclick="openEdit('scholar', ${r.id})">Edit</button>
-      <button class="btn" onclick="delRow('scholar', ${r.id})">Delete</button>
-    </div>
+    <div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt2(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span>${badges? ' '+badges: ''}</div>
+    <div class="actions-edit"><button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('scholar', ${r.id})">${iconPencil()}</button></div>
+    <div class="actions-del"><button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('scholar', ${r.id})">${iconTrash()}</button></div>
   </div>`;
 }
 
@@ -406,22 +512,25 @@ function matchesFilter(rec, q){
 function renderBoard(){
   const d=model.get(); const q=($('#filterBoard').value||'').toLowerCase().trim();
   const lanes = Object.fromEntries(LANES.map(l=>[l.key,[]]));
+  const hide = !!(d.prefs && d.prefs.hideRemoved);
 
   d.colleges.forEach(r=>{
     const status=r.status||'Considering';
+    const laneKey = (status==='Considering')? 'ConsideringCollege' : status;
     const schNames=(Array.isArray(r.scholarships)? r.scholarships.map(s=>s.name):[]);
     const rec=[r.name,r.app,status,r.notes,...schNames];
     if(!matchesFilter(rec,q)) return;
-    const laneKey = (status==='Considering')? 'ConsideringCollege' : status;
-    lanes[laneKey]?.push(collegeCard(r));
+    if(hide && (laneKey==='ConsideringCollege') && r.removed) return;
+    lanes[laneKey]?.push(collegeCard(r, laneKey));
   });
 
   d.scholarships.forEach(r=>{
     const status=r.status||'Considering';
+    const laneKey = (status==='Considering')? 'ConsideringScholarship' : status;
     const rec=[r.name,r.sponsor,r.prize,status,r.notes];
     if(!matchesFilter(rec,q)) return;
-    const laneKey = (status==='Considering')? 'ConsideringScholarship' : status;
-    lanes[laneKey]?.push(scholarCard(r));
+    if(hide && (laneKey==='ConsideringScholarship') && r.removed) return;
+    lanes[laneKey]?.push(scholarCard(r, laneKey));
   });
 
   document.getElementById('kanban').innerHTML = LANES.map(l=>{
@@ -466,7 +575,7 @@ function renderTable(sortKey, asc=true){
   let rows=[
     ...d.colleges.map(c=>{
       const schList = (Array.isArray(c.scholarships)&&c.scholarships.length)?
-        c.scholarships.map(s=>`${s.name||'Scholarship'}${s.due?` (${fmt(s.due)})`:''}`).join(' · ') : '';
+        c.scholarships.map(s=>`${s.name||'Scholarship'}${s.due?` (${fmt2(s.due)})`:''}`).join(' · ') : '';
       const firstSchDue = (Array.isArray(c.scholarships)&&c.scholarships[0]?.due) ? c.scholarships[0].due : '';
       return {type:'College',name:c.name,app:c.app,eaed:c.eaed,rd:c.rd,scholar:schList,sdue:firstSchDue,due:'',status:c.status,_id:c.id,_t:'college',notes:c.notes};
     }),
@@ -489,11 +598,11 @@ function renderTable(sortKey, asc=true){
       <td>${r.type}</td>
       <td>${r.name||''}</td>
       <td>${r.app||''}</td>
-      <td>${r.eaed?fmt(r.eaed):''}</td>
-      <td>${r.rd?fmt(r.rd):''}</td>
+      <td>${r.eaed?fmt2(r.eaed):''}</td>
+      <td>${r.rd?fmt2(r.rd):''}</td>
       <td>${r.scholar||''}</td>
-      <td>${r.sdue?fmt(r.sdue):''}</td>
-      <td>${r.due?fmt(r.due):''}</td>
+      <td>${r.sdue?fmt2(r.sdue):''}</td>
+      <td>${r.due?fmt2(r.due):''}</td>
       <td>${r.status||''}</td>
       <td><button class="btn" onclick="openEdit('${r._t}', ${r._id})">Edit</button> <button class="btn" onclick="delRow('${r._t}', ${r._id})">Delete</button></td>
     </tr>
@@ -526,8 +635,12 @@ function buildCalendar(){
       if(Array.isArray(c.scholarships)){
         c.scholarships.forEach(s=>{ if(s.due===dateISO) add('college', `${c.name}: ${s.name}`); });
       }
+      if(c.interview && c.interviewDate===dateISO) add('college', `${c.name} (Interview)`);
     });
-    dta.scholarships.forEach(s=>{ if(s.due===dateISO) add('scholar', `${s.sponsor}: ${s.name}`); });
+    dta.scholarships.forEach(s=>{
+      if(s.due===dateISO) add('scholar', `${s.sponsor}: ${s.name}`);
+      if(s.interview && s.interviewDate===dateISO) add('scholar', `${s.name} (Interview)`);
+    });
     grid.appendChild(el);
   }
   function cell(day){ const d=document.createElement('div'); d.className='cal-cell'; d.innerHTML = day? `<div class="cal-date">${day}</div>`: ''; return d; }
@@ -545,7 +658,7 @@ function rowHTML(name='', due=''){
   return `<div class="mini-row">
     <input class="sch-name" placeholder="Scholarship name" value="${name?name.replace(/"/g,'&quot;'):''}">
     <input class="sch-due" type="date" value="${due||''}">
-    <button class="xbtn" onclick="this.parentElement.remove()">Remove</button>
+    <button class="btn" style="padding:6px 10px" onclick="this.parentElement.remove()">Remove</button>
   </div>`;
 }
 function renderSchRows(list){
@@ -556,13 +669,15 @@ function addSchRow(){ cSchList.insertAdjacentHTML('beforeend', rowHTML()); }
 function openEdit(type, id){
   editingType=type; editingId=id; const d=model.get();
   if(type==='college'){
-    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholarships:[],status:'Considering',notes:''} : d.colleges.find(x=>x.id===id);
+    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholarships:[],status:'Considering',notes:'',interview:false,interviewDate:'',removed:false} : d.colleges.find(x=>x.id===id);
     cName.value=r.name||''; cApp.value=r.app||''; cEAED.value=r.eaed||''; cRD.value=r.rd||''; cStatus.value=r.status||'Considering'; cNotes.value=r.notes||'';
+    cInterviewChk.checked=!!r.interview; cInterviewDate.value=r.interviewDate||''; cRemovedChk.checked=!!r.removed;
     renderSchRows(Array.isArray(r.scholarships)? r.scholarships : []);
     editCollegeModal.classList.remove('hidden');
   }else{
-    const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:''} : d.scholarships.find(x=>x.id===id);
+    const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:'',interview:false,interviewDate:'',removed:false} : d.scholarships.find(x=>x.id===id);
     sSponsor.value=r.sponsor||''; sName.value=r.name||''; sDue.value=r.due||''; sPrize.value=r.prize||''; sStatus.value=r.status||'Considering'; sNotes.value=r.notes||'';
+    sInterviewChk.checked=!!r.interview; sInterviewDate.value=r.interviewDate||''; sRemovedChk.checked=!!r.removed;
     editScholarModal.classList.remove('hidden');
   }
 }
@@ -571,9 +686,9 @@ function closeEdit(type){ (type==='college'?editCollegeModal:editScholarModal).c
 function collectSchRows(){
   return Array.from(cSchList.querySelectorAll('.mini-row')).map(row=>{
     const name = row.querySelector('.sch-name').value.trim();
-    const due  = row.querySelector('.sch-due').value;
+    const due  = normalizeDate(row.querySelector('.sch-due').value);
     if(!name && !due) return null;
-    return {name, due};
+    return {name: name||'Scholarship', due};
   }).filter(Boolean);
 }
 
@@ -581,14 +696,25 @@ function saveEdit(type){
   const d=model.get();
   if(type==='college'){
     const obj={
-      name:cName.value.trim(), app:cApp.value.trim(), eaed:cEAED.value, rd:cRD.value,
+      name:cName.value.trim(), app:cApp.value.trim(),
+      eaed: normalizeDate(cEAED.value), rd: normalizeDate(cRD.value),
       scholarships: collectSchRows(),
-      status:cStatus.value, notes:cNotes.value.trim()
+      status:cStatus.value, notes:cNotes.value.trim(),
+      interview: !!cInterviewChk.checked,
+      interviewDate: normalizeDate(cInterviewDate.value),
+      removed: !!cRemovedChk.checked
     };
     if(!obj.name){ alert('College name is required.'); return; }
     if(editingId==null){ obj.id=++d.seqC; d.colleges.push(obj); } else { const i=d.colleges.findIndex(x=>x.id===editingId); if(i>=0) d.colleges[i]=Object.assign({id:editingId}, obj); }
   }else{
-    const obj={sponsor:sSponsor.value.trim(), name:sName.value.trim(), due:sDue.value, prize:sPrize.value.trim(), status:sStatus.value, notes:sNotes.value.trim()};
+    const obj={
+      sponsor:sSponsor.value.trim(), name:sName.value.trim(),
+      due: normalizeDate(sDue.value), prize:sPrize.value.trim(),
+      status:sStatus.value, notes:sNotes.value.trim(),
+      interview: !!sInterviewChk.checked,
+      interviewDate: normalizeDate(sInterviewDate.value),
+      removed: !!sRemovedChk.checked
+    };
     if(!obj.name){ alert('Scholarship name is required.'); return; }
     if(editingId==null){ obj.id=++d.seqS; d.scholarships.push(obj); } else { const i=d.scholarships.findIndex(x=>x.id===editingId); if(i>=0) d.scholarships[i]=Object.assign({id:editingId}, obj); }
   }
@@ -618,11 +744,10 @@ function doBulk(){
         id: ++d.seqC,
         name:o.name||o.col0||'',
         app:o.app||o['application type']||'',
-        eaed:o.eaed||o['ea/ed']||o['eaed']||'',
-        rd:o.rd||o['rd']||o['rd due']||'',
-        scholarships: [],
-        status:o.status||'Considering',
-        notes:o.notes||''
+        eaed: normalizeDate(o.eaed||o['ea/ed']||o['eaed']||''),
+        rd:   normalizeDate(o.rd||o['rd']||o['rd due']||''),
+        scholarships: [], status:o.status||'Considering', notes:o.notes||'',
+        interview:false, interviewDate:'', removed:false
       });
     });
   }else{
@@ -631,10 +756,10 @@ function doBulk(){
         id: ++d.seqS,
         sponsor:o.sponsor||o.col0||'',
         name:o.name||o['scholarship name']||o.col1||'',
-        due:o.due||o['due date']||'',
+        due: normalizeDate(o.due||o['due date']||''),
         prize:o.prize||o['top prize']||'',
-        status:o.status||'Considering',
-        notes:o.notes||''
+        status:o.status||'Considering', notes:o.notes||'',
+        interview:false, interviewDate:'', removed:false
       });
     });
   }
@@ -709,7 +834,7 @@ function debounceSaveCloud(data){
   }, 400);
 }
 
-/* -------- expose functions for inline onclick (module scope fix) -------- */
+/* -------- expose functions for inline onclick -------- */
 Object.assign(window, { openEdit, closeEdit, saveEdit, delRow, addSchRow, openBulk, closeBulk, doBulk });
 
 </script>
