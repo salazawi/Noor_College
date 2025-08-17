@@ -357,6 +357,7 @@ const model={
     if(!d.calendar){ d.calendar={year:new Date().getFullYear(), month:new Date().getMonth()}; }
     if(!d.prefs) d.prefs={hideRemoved:false};
     hideRemoved.checked = !!d.prefs.hideRemoved;
+    repairIds(d);
     model.save(d,false);
   },
   get(){return model.load();},
@@ -383,6 +384,27 @@ function seedScholars(){
     {id:1002, sponsor:'VFW', name:'Voice of Democracy', due:'2025-10-31', prize:'$35,000', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false},
     {id:1003, sponsor:'Elks', name:'Most Valuable Student', due:'2025-11-12', prize:'$4k–$30k', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false}
   ];
+}
+
+function repairIds(d){
+  d.seqC = d.seqC || 100;
+  d.seqS = d.seqS || 1000;
+
+  // Colleges
+  const seenC = new Set();
+  d.colleges = (d.colleges || []).map(c=>{
+    if (!Number.isInteger(c.id) || seenC.has(c.id)) c.id = ++d.seqC;
+    seenC.add(c.id);
+    return c;
+  });
+
+  // Scholarships
+  const seenS = new Set();
+  d.scholarships = (d.scholarships || []).map(s=>{
+    if (!Number.isInteger(s.id) || seenS.has(s.id)) s.id = ++d.seqS;
+    seenS.add(s.id);
+    return s;
+  });
 }
 
 /* -------- UI: tabs, filters, export/import -------- */
@@ -690,6 +712,7 @@ function openEdit(type, id){
     editCollegeModal.classList.remove('hidden');
   }else{
     const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:'',interview:false,interviewDate:'',removed:false} : d.scholarships.find(x=>x.id===id);
+        if(!r){ alert('Could not find this scholarship. IDs were repaired—please try again.'); return; }
     sSponsor.value=r.sponsor||''; sName.value=r.name||''; sDue.value=r.due||''; sPrize.value=r.prize||''; sStatus.value=r.status||'Considering'; sNotes.value=r.notes||'';
     sInterviewChk.checked=!!r.interview; sInterviewDate.value=r.interviewDate||''; sRemovedChk.checked=!!r.removed;
     editScholarModal.classList.remove('hidden');
@@ -777,6 +800,7 @@ function doBulk(){
       });
     });
   }
+  repairIds(d);
   model.set(d); renderAll(); closeBulk();
 }
 
