@@ -34,7 +34,7 @@
   .tool-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;white-space:nowrap}
   .toggle{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--muted)}
-  .kanban{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;align-items:flex-start}
+  .kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:flex-start}
   .lane{background:var(--lane-bg);border:1px solid var(--lane-border);border-radius:14px;padding:12px;min-height:220px;box-shadow:var(--shadow)}
   .lane h3{margin:0 0 8px 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
   .lane .count{font-weight:900;color:var(--accent-purple)}.dropzone{min-height:160px}
@@ -288,7 +288,6 @@ sponsor,name,due,prize,status,notes"></textarea>
 
 <footer class="wrap muted" style="padding:28px 16px">Built for Noor with ❤️ — cloud sync when signed in; otherwise local-only.</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>  
 <script type="module">
 /* -------- Firebase SDK -------- */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -442,7 +441,8 @@ function dueClass(d){ const dl=daysLeft(d); if(dl==null) return ''; if(dl<=7) re
 
 /* -------- Lanes -------- */
 const LANES=[
-  {key:'ConsideringCollege',     label:'Considering — College'},
+  {key:'ConsideringEA',          label:'Considering — EA'},
+  {key:'ConsideringRD',          label:'Considering — RD'},
   {key:'ConsideringScholarship', label:'Considering — Scholarship'},
   {key:'Applying',               label:'Applying'},
   {key:'Submitted',              label:'Submitted'},
@@ -469,7 +469,7 @@ function badgeInterview(rec){
   return `<span class="tag badge">Interview${d}</span>`;
 }
 function badgeRemoved(rec, laneKey){
-  if(!(rec.removed && (laneKey==='ConsideringCollege' || laneKey==='ConsideringScholarship'))) return '';
+  if(!(rec.removed && (laneKey==='ConsideringEA' || laneKey==='ConsideringRD' || laneKey==='ConsideringScholarship'))) return '';
   return `<span class="tag badge">Removed</span>`;
 }
 
@@ -483,7 +483,7 @@ function collegeCard(r, laneKey){
     return `<div class="sch-row"><span class="sch-chip">${name}</span><span class="sch-date ${urgent?'urgent':''}">${due}</span></div>`;
   }).join('');
   const badges = [badgeInterview(r), badgeRemoved(r, laneKey)].filter(Boolean).join(' ');
-  const inactiveClass = (r.removed && (laneKey==='ConsideringCollege')) ? 'inactive' : '';
+  const inactiveClass = (r.removed && (laneKey==='ConsideringEA' || laneKey==='ConsideringRD')) ? 'inactive' : '';
   return `<div class="card college ${inactiveClass}" draggable="true" data-type="college" data-id="${r.id}">
     <div class="title">${r.name||''}</div>
     <div class="rowtiny"><span class="tag">${r.app||'—'}</span>${badges? ' '+badges: ''}</div>
@@ -517,11 +517,11 @@ function renderBoard(){
 
   d.colleges.forEach(r=>{
     const status=r.status||'Considering';
-    const laneKey = (status==='Considering')? 'ConsideringCollege' : status;
+    const laneKey = (status==='Considering')? (r.consideringLane || (r.eaed ? 'ConsideringEA' : 'ConsideringRD')) : status;
     const schNames=(Array.isArray(r.scholarships)? r.scholarships.map(s=>s.name):[]);
     const rec=[r.name,r.app,status,r.notes,...schNames];
     if(!matchesFilter(rec,q)) return;
-    if(hide && (laneKey==='ConsideringCollege') && r.removed) return;
+    if(hide && ((laneKey==='ConsideringEA'||laneKey==='ConsideringRD')) && r.removed) return;
     lanes[laneKey]?.push(collegeCard(r, laneKey));
   });
 
@@ -545,35 +545,41 @@ function renderBoard(){
   enableDnD();
 }
 function enableDnD(){
+  $$('.card').forEach(c=>{
+    c.addEventListener('dragstart', e=>{ c.classList.add('dragging'); e.dataTransfer.setData('text/plain', JSON.stringify({type:c.dataset.type, id:c.dataset.id})); });
+    c.addEventListener('dragend', ()=> c.classList.remove('dragging'));
+  });
   $$('.dropzone').forEach(z=>{
-    Sortable.create(z, {
-      group: 'kanban',
-      animation: 150,
-      draggable: '.card',
-      handle: '.title',           // drag by the title area (less accidental drags)
-      filter: '.iconbtn,button',  // clicking icons/buttons won't start a drag
-      onAdd: onMoved,
-      onUpdate: onMoved
+    z.addEventListener('dragover', e=> e.preventDefault());
+    z.addEventListener('drop', e=>{
+      e.preventDefault();
+      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); if(!payload.id) return;
+      moveToLane(payload.type, parseInt(payload.id,10), z.dataset.zone);
     });
   });
-
-  function onMoved(evt){
-    const card   = evt.item;
-    const type   = card.dataset.type;          // 'college' | 'scholar'
-    const id     = parseInt(card.dataset.id,10);
-    const laneKey= evt.to.dataset.zone;        // e.g., 'Applying'
-    moveToLane(type, id, laneKey);             // already defined in your file
-  }
 }
 function laneToStatus(type, laneKey){
-  if(laneKey==='ConsideringCollege' || laneKey==='ConsideringScholarship') return 'Considering';
+  if(laneKey==='ConsideringEA' || laneKey==='ConsideringRD' || laneKey==='ConsideringScholarship') return 'Considering';
   return laneKey;
 }
 function moveToLane(type, id, laneKey){
   const status = laneToStatus(type, laneKey);
   const d=model.get();
-  if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges[i].status=status; }
-  else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships[i].status=status; }
+  if(type==='college'){ 
+    const i=d.colleges.findIndex(x=>x.id===id); 
+    if(i>=0){ 
+      d.colleges[i].status=status; 
+      if(status==='Considering' && (laneKey==='ConsideringEA' || laneKey==='ConsideringRD')){
+        d.colleges[i].consideringLane = laneKey;
+      }else{
+        delete d.colleges[i].consideringLane;
+      }
+    } 
+  }
+  else { 
+    const i=d.scholarships.findIndex(x=>x.id===id); 
+    if(i>=0) d.scholarships[i].status=status; 
+  }
   model.set(d); renderBoard(); renderTable(); buildCalendar();
 }
 
