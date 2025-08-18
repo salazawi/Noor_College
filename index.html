@@ -357,6 +357,34 @@ const model={
     if(!d.calendar){ d.calendar={year:new Date().getFullYear(), month:new Date().getMonth()}; }
     if(!d.prefs) d.prefs={hideRemoved:false};
     hideRemoved.checked = !!d.prefs.hideRemoved;
+    // inside model.init(), after prefs:
+    if (!d.order) d.order = Object.fromEntries(LANES.map(l => [l.key, []]));
+    function ensureOrder() {
+      // remove ids that no longer exist and add any missing ids (append at end)
+      const idsC = new Set((d.colleges||[]).map(x => x.id));
+      const idsS = new Set((d.scholarships||[]).map(x => x.id));
+      for (const l of LANES) {
+        const isScholarLane = (l.key === 'ConsideringScholarship');
+        const keep = new Set(isScholarLane ? idsS : idsC);
+        d.order[l.key] = (d.order[l.key] || []).filter(id => keep.has(id));
+      }
+      // seed any missing ids based on current lane placement
+      const laneOfCollege = c => ( (c.status||'Considering')==='Considering'
+          ? (c.consideringLane || (c.eaed ? 'ConsideringEA' : 'ConsideringRD'))
+          : (c.status) );
+      (d.colleges||[]).forEach(c=>{
+        const lane = laneOfCollege(c);
+        if (!d.order[lane].includes(c.id)) d.order[lane].push(c.id);
+      });
+      (d.scholarships||[]).forEach(s=>{
+        const lane = (s.status||'Considering')==='Considering' ? 'ConsideringScholarship' : s.status;
+        if (!d.order[lane].includes(s.id)) d.order[lane].push(s.id);
+      });
+    }
+    ensureOrder();
+    function removeFromAllOrders(d, id){
+      for(const l of LANES) d.order[l.key] = (d.order[l.key]||[]).filter(x=>x!==id);
+    }
     repairIds(d);
     model.save(d,false);
   },
@@ -533,53 +561,124 @@ function matchesFilter(rec, q){
 }
 
 function renderBoard(){
-  const d=model.get(); const q=($('#filterBoard').value||'').toLowerCase().trim();
-  const lanes = Object.fromEntries(LANES.map(l=>[l.key,[]]));
+  const d = model.get();
+  const q = ($('#filterBoard').value||'').toLowerCase().trim();
   const hide = !!(d.prefs && d.prefs.hideRemoved);
 
+  // collect cards and maps
+  const laneCardsHTML = Object.fromEntries(LANES.map(l=>[l.key,{}])); // { laneKey: {id: "<div...>"} }
+  const laneIds = Object.fromEntries(LANES.map(l=>[l.key,[]]));
+
   d.colleges.forEach(r=>{
-    const status=r.status||'Considering';
-    const laneKey = (status==='Considering')? (r.consideringLane || (r.eaed ? 'ConsideringEA' : 'ConsideringRD')) : status;
-    const schNames=(Array.isArray(r.scholarships)? r.scholarships.map(s=>s.name):[]);
+    const status = r.status||'Considering';
+    const laneKey = (status==='Considering') ? (r.consideringLane || (r.eaed ? 'ConsideringEA' : 'ConsideringRD')) : status;
+    const schNames = Array.isArray(r.scholarships)? r.scholarships.map(s=>s.name):[];
     const rec=[r.name,r.app,status,r.notes,...schNames];
-    if(!matchesFilter(rec,q)) return;
-    if(hide && ((laneKey==='ConsideringEA'||laneKey==='ConsideringRD')) && r.removed) return;
-    lanes[laneKey]?.push(collegeCard(r, laneKey));
+    if(q && !rec.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q))) return;
+    if(hide && (laneKey==='ConsideringEA'||laneKey==='ConsideringRD') && r.removed) return;
+    laneCardsHTML[laneKey][r.id] = collegeCard(r, laneKey);
   });
 
   d.scholarships.forEach(r=>{
     const status=r.status||'Considering';
     const laneKey = (status==='Considering')? 'ConsideringScholarship' : status;
     const rec=[r.name,r.sponsor,r.prize,status,r.notes];
-    if(!matchesFilter(rec,q)) return;
+    if(q && !rec.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q))) return;
     if(hide && (laneKey==='ConsideringScholarship') && r.removed) return;
-    lanes[laneKey]?.push(scholarCard(r, laneKey));
+    laneCardsHTML[laneKey][r.id] = scholarCard(r, laneKey);
   });
 
-  document.getElementById('kanban').innerHTML = LANES.map(l=>{
-    const items = lanes[l.key]||[];
+    // build ordered lists
+    const html = LANES.map(l=>{
+    const map = laneCardsHTML[l.key];
+    const known = Object.keys(map).map(n=>+n);
+    const order = (d.order[l.key]||[]).filter(id=>known.includes(id));
+    const tail  = known.filter(id=>!order.includes(id)); // any new ids not yet in order
+    const idsInOrder = order.concat(tail);
+    const items = idsInOrder.map(id=>map[id]).join('') || '<div class="muted" style="padding:8px">No items</div>';
     return `<div class="lane" data-lane="${l.key}">
-      <h3>${l.label} <span class="count">(${items.length})</span></h3>
-      <div class="dropzone" data-zone="${l.key}">${items.join('')||'<div class="muted" style="padding:8px">No items</div>'}</div>
-    </div>`;
+            <h3>${l.label} <span class="count">(${idsInOrder.length})</span></h3>
+            <div class="dropzone" data-zone="${l.key}">${items}</div>
+          </div>`;
   }).join('');
 
-  enableDnD();
+document.getElementById('kanban').innerHTML = html;
+enableDnD();
 }
+
 function enableDnD(){
   $$('.card').forEach(c=>{
-    c.addEventListener('dragstart', e=>{ c.classList.add('dragging'); e.dataTransfer.setData('text/plain', JSON.stringify({type:c.dataset.type, id:c.dataset.id})); });
+    c.addEventListener('dragstart', e=>{
+      c.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', JSON.stringify({type:c.dataset.type, id:+c.dataset.id}));
+    });
     c.addEventListener('dragend', ()=> c.classList.remove('dragging'));
   });
+
   $$('.dropzone').forEach(z=>{
     z.addEventListener('dragover', e=> e.preventDefault());
     z.addEventListener('drop', e=>{
       e.preventDefault();
-      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); if(!payload.id) return;
-      moveToLane(payload.type, parseInt(payload.id,10), z.dataset.zone);
+      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); 
+      if(!payload.id) return;
+      const destLane = z.dataset.zone;
+
+      // figure out target index by mouse position
+      const after = getDragAfterElement(z, e.clientY);
+      // cards currently in DOM (after render, reflects current order)
+      const domCards = Array.from(z.querySelectorAll('.card:not(.dragging)'));
+      let destIdx = (after ? domCards.indexOf(after) + 1 : 0);
+
+      applyMove(payload.type, payload.id, destLane, destIdx);
     });
   });
 }
+
+// helper to find element after mouse pointer
+function getDragAfterElement(container, y){
+  const els = [...container.querySelectorAll('.card:not(.dragging)')];
+  let closest = {offset: Number.NEGATIVE_INFINITY, element: null};
+  for(const child of els){
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height/2;
+    if(offset > 0 && offset <  box.height && offset > closest.offset){
+      closest = {offset, element: child};
+    }
+  }
+  return closest.element;
+}
+
+function applyMove(type, id, destLane, destIdx){
+  const d = model.get();
+
+  // Remove from all lane orders
+  removeFromAllOrders(d, id);
+
+  // Update item’s status/lane
+  const toStatus = (destLane==='ConsideringEA' || destLane==='ConsideringRD' || destLane==='ConsideringScholarship') ? 'Considering' : destLane;
+
+  if(type==='college'){
+    const i = d.colleges.findIndex(x=>x.id===id); if(i<0) return;
+    d.colleges[i].status = toStatus;
+    if(toStatus==='Considering' && (destLane==='ConsideringEA' || destLane==='ConsideringRD')){
+      d.colleges[i].consideringLane = destLane;
+    }else{
+      delete d.colleges[i].consideringLane;
+    }
+  }else{
+    const i = d.scholarships.findIndex(x=>x.id===id); if(i<0) return;
+    d.scholarships[i].status = toStatus;
+  }
+
+  // Insert into destination order at the computed index
+  const arr = d.order[destLane] || (d.order[destLane]=[]);
+  if(destIdx < 0 || destIdx > arr.length) destIdx = arr.length;
+  arr.splice(destIdx, 0, id);
+
+  model.set(d);
+  renderBoard(); renderTable(); buildCalendar();
+}
+  
 function laneToStatus(type, laneKey){
   if(laneKey==='ConsideringEA' || laneKey==='ConsideringRD' || laneKey==='ConsideringScholarship') return 'Considering';
   return laneKey;
@@ -731,19 +830,45 @@ function collectSchRows(){
 
 function saveEdit(type){
   const d=model.get();
-  if(type==='college'){
-    const obj={
-      name:cName.value.trim(), app:cApp.value.trim(),
-      eaed: normalizeDate(cEAED.value), rd: normalizeDate(cRD.value),
-      scholarships: collectSchRows(),
-      status:cStatus.value, notes:cNotes.value.trim(),
-      interview: !!cInterviewChk.checked,
-      interviewDate: normalizeDate(cInterviewDate.value),
-      removed: !!cRemovedChk.checked
-    };
-    if(!obj.name){ alert('College name is required.'); return; }
-    if(editingId==null){ obj.id=++d.seqC; d.colleges.push(obj); } else { const i=d.colleges.findIndex(x=>x.id===editingId); if(i>=0) d.colleges[i]=Object.assign({id:editingId}, obj); }
-  }else{
+  if (type === 'college') {
+  const obj = {
+    name: cName.value.trim(), app: cApp.value.trim(),
+    eaed: normalizeDate(cEAED.value), rd: normalizeDate(cRD.value),
+    scholarships: collectSchRows(),
+    status: cStatus.value, notes: cNotes.value.trim(),
+    interview: !!cInterviewChk.checked,
+    interviewDate: normalizeDate(cInterviewDate.value),
+    removed: !!cRemovedChk.checked
+  };
+  if (!obj.name) { alert('College name is required.'); return; }
+
+  if (editingId == null) {
+    // NEW: create + push to lane order
+    obj.id = ++d.seqC;
+    d.colleges.push(obj);
+
+    // decide initial Considering sub-lane (EA vs RD) based on dates
+    const lane =
+      (obj.status === 'Considering')
+        ? (obj.eaed ? 'ConsideringEA' : 'ConsideringRD')
+        : obj.status;
+    (d.order[lane] ||= []).push(obj.id);        // ⬅️ persist order
+  } else {
+    const i = d.colleges.findIndex(x => x.id === editingId);
+    if (i >= 0) {
+      d.colleges[i] = Object.assign({ id: editingId }, obj);
+
+      // NEW: make sure order reflects any status/lane change made in the editor
+      removeFromAllOrders(d, editingId);
+      const lane =
+        (obj.status === 'Considering')
+          ? (obj.eaed ? 'ConsideringEA' : 'ConsideringRD')
+          : obj.status;
+      const arr = (d.order[lane] ||= []);
+      if (!arr.includes(editingId)) arr.push(editingId);
+    }
+  }
+} else{
     const obj={
       sponsor:sSponsor.value.trim(), name:sName.value.trim(),
       due: normalizeDate(sDue.value), prize:sPrize.value.trim(),
@@ -761,6 +886,7 @@ function delRow(type,id){
   const d=model.get();
   if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges.splice(i,1); }
   else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships.splice(i,1); }
+  removeFromAllOrders(model.get(), id); // call before model.set(d)
   model.set(d); renderAll();
 }
 
