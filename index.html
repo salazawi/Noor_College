@@ -4,66 +4,97 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Noor’s College Board — v6.4 (In-lane Reorder + ID Fix)</title>
-<meta name="theme-color" content="#faf7fb">
+<meta name="theme-color" content="#f7f8fc">
 <style>
-  :root{--bg:#faf7fb;--ink:#1e1231;--muted:#615e76;--panel:#fff;--border:#eadff1;--shadow:0 6px 20px rgba(30,18,49,.08);
-        --lane-bg:#fff;--lane-border:#eadff1;--college-bg:#efe7ff;--college-border:#d7c8ff;--scholar-bg:#ffe6ef;--scholar-border:#ffc2d4;
-        --tag-bg:#f5edf9;--tag-border:#eadff1;--accent-pink:#ff6fa3;--accent-green:#2ec4a6;--accent-purple:#7b61ff;
-        --soon:#ffb020;--urgent:#ff6b6b;--danger:#ff4d6d}
+  :root{
+    --color-background:#f7f8fc;
+    --color-surface:#ffffff;
+    --color-surface-tint:#f1f3ff;
+    --color-surface-muted:#f4f6ff;
+    --color-ink:#1f2337;
+    --color-muted:#6b6f86;
+    --color-border:#dce1f3;
+    --shadow-soft:0 18px 44px rgba(31,35,55,.08);
+    --shadow-ambient:0 1px 0 rgba(31,37,89,.06);
+    --radius-sm:12px;
+    --radius-md:16px;
+    --radius-lg:20px;
+    --color-primary-strong:#4b5cc4;
+    --color-primary:#5b70ce;
+    --color-primary-contrast:#ffffff;
+    --color-secondary-strong:#5faeb3;
+    --color-secondary:#69b0b5;
+    --color-secondary-contrast:#0f2f2c;
+    --color-accent-strong:#e08fb0;
+    --color-accent:#f2a7c2;
+    --color-accent-contrast:#3d1c2a;
+    --lane-surface:#ffffff;
+    --lane-border:#dfe3f6;
+    --card-college-bg:#e4e7fb;
+    --card-college-border:#cbd2f6;
+    --card-scholar-bg:#f6e8f0;
+    --card-scholar-border:#e8cadc;
+    --tag-surface:#edeaf9;
+    --tag-border:#d8d4f0;
+    --tag-ink:#4d4f68;
+    --status-soon:#955719;
+    --status-urgent:#b03b49;
+    --status-danger:#9b1f36;
+  }
   *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0;color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"SF Pro","Segoe UI",Roboto,Helvetica,Arial;background:var(--bg)}
-  header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--border)}
+  body{margin:0;color:var(--color-ink);font-family:ui-sans-serif,system-ui,-apple-system,"SF Pro","Segoe UI",Roboto,Helvetica,Arial;background:var(--color-background)}
+  header{position:sticky;top:0;z-index:20;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-ambient)}
   .wrap{max-width:1220px;margin:0 auto;padding:14px 16px}
   .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:12px;font-weight:900}
-  .logo{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent-purple),#b39dff);color:#fff;font-weight:900;box-shadow:var(--shadow)}
+  .logo{width:36px;height:36px;border-radius:var(--radius-sm);display:grid;place-items:center;background:linear-gradient(135deg,var(--color-primary-strong),var(--color-primary));color:var(--color-primary-contrast);font-weight:900;box-shadow:var(--shadow-ambient),var(--shadow-soft)}
   nav{display:flex;gap:8px;flex-wrap:wrap}
-  .tab{appearance:none;border:1px solid var(--border);background:var(--panel);color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer;font-weight:700;box-shadow:var(--shadow)}
-  .tab.active{border-color:transparent;background:linear-gradient(#fff,#f7f2fb)}
+  .tab{appearance:none;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-ink);padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;font-weight:700;box-shadow:var(--shadow-ambient),var(--shadow-soft)}
+  .tab.active{border-color:transparent;background:linear-gradient(var(--color-surface),var(--color-surface-tint))}
   .spacer{flex:1}
-  .btn{appearance:none;border:1px solid var(--border);cursor:pointer;font-weight:800;border-radius:10px;padding:10px 14px;background:#fff;color:var(--ink);box-shadow:var(--shadow);white-space:nowrap}
-  .btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--accent-purple),#b39dff);color:#fff}
-  .btn.green{border-color:transparent;background:linear-gradient(135deg,var(--accent-green),#8be3d3);color:#0e2d29}
-  .btn.pink{border-color:transparent;background:linear-gradient(135deg,var(--accent-pink),#ffb3cd);color:#5b0d27}
-  main .wrap{padding:18px 16px}.muted{color:var(--muted)}.hidden{display:none!important}
-  input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);outline:none;background:#fff;color:var(--ink);font-size:16px}
-  input:focus,select:focus,textarea:focus{border-color:var(--accent-purple)}
-  label{font-size:12px;color:var(--muted);font-weight:700;display:block;margin:6px 0 4px 0}
+  .btn{appearance:none;border:1px solid var(--color-border);cursor:pointer;font-weight:800;border-radius:var(--radius-sm);padding:10px 14px;background:var(--color-surface);color:var(--color-ink);box-shadow:var(--shadow-ambient),var(--shadow-soft);white-space:nowrap;transition:transform .15s ease}
+  .btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--color-primary-strong),var(--color-primary));color:var(--color-primary-contrast)}
+  .btn.green{border-color:transparent;background:linear-gradient(135deg,var(--color-secondary-strong),var(--color-secondary));color:var(--color-secondary-contrast)}
+  .btn.pink{border-color:transparent;background:linear-gradient(135deg,var(--color-accent-strong),var(--color-accent));color:var(--color-accent-contrast)}
+  main .wrap{padding:18px 16px}.muted{color:var(--color-muted)}.hidden{display:none!important}
+  input,select,textarea{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--color-border);outline:none;background:var(--color-surface);color:var(--color-ink);font-size:16px;box-shadow:var(--shadow-ambient)}
+  input:focus,select:focus,textarea:focus{border-color:var(--color-primary)}
+  label{font-size:12px;color:var(--color-muted);font-weight:700;display:block;margin:6px 0 4px 0}
   .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
   .tool-left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
   .tool-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .pill{padding:6px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;white-space:nowrap}
-  .toggle{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;color:#666}
+  .pill{padding:6px 10px;border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface);white-space:nowrap;box-shadow:var(--shadow-ambient)}
+  .toggle{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface);color:var(--color-muted);box-shadow:var(--shadow-ambient)}
   .kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:flex-start}
-  .lane{background:var(--lane-bg);border:1px solid var(--lane-border);border-radius:14px;padding:12px;min-height:220px;box-shadow:var(--shadow)}
-  .lane h3{margin:0 0 8px 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-  .lane .count{font-weight:900;color:var(--accent-purple)}.dropzone{min-height:160px}
-  .card{position:relative;border:1px solid var(--border);border-radius:12px;padding:12px 12px 76px 12px;margin-bottom:12px;box-shadow:var(--shadow);cursor:grab}
-  .card.college{background:var(--college-bg);border-color:var(--college-border)}.card.scholar{background:var(--scholar-bg);border-color:var(--scholar-border)}
+  .lane{background:var(--lane-surface);border:1px solid var(--lane-border);border-radius:var(--radius-lg);padding:12px;min-height:220px;box-shadow:var(--shadow-ambient),var(--shadow-soft)}
+  .lane h3{margin:0 0 8px 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-muted)}
+  .lane .count{font-weight:900;color:var(--color-primary)}.dropzone{min-height:160px}
+  .card{position:relative;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 12px 76px 12px;margin-bottom:12px;box-shadow:var(--shadow-ambient),var(--shadow-soft);cursor:grab;background:var(--color-surface)}
+  .card.college{background:var(--card-college-bg);border-color:var(--card-college-border)}.card.scholar{background:var(--card-scholar-bg);border-color:var(--card-scholar-border)}
   .card.dragging{opacity:.75}.title{font-weight:900;margin-bottom:6px;padding-right:56px}
-  .rowtiny{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:4px}
-  .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--tag-border);background:#f5edf9;color:#666}
+  .rowtiny{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--color-muted);margin-top:4px}
+  .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--tag-border);background:var(--tag-surface);color:var(--tag-ink)}
   .tag.badge{font-weight:800}
-  .dueSoon{border-color:var(--soon);color:var(--soon);background:#fff7eb}.dueUrgent{border-color:var(--urgent);color:var(--urgent);background:#fff1f1}
+  .dueSoon{border-color:var(--status-soon);color:var(--status-soon);background:#fff4e9}.dueUrgent{border-color:var(--status-urgent);color:var(--status-urgent);background:#fff1f3}
   .actions-edit{position:absolute;right:8px;top:8px}
   .actions-del{position:absolute;right:8px;bottom:8px}
-  .iconbtn{width:36px;height:36px;border-radius:12px;border:1px solid var(--border);background:#fff;display:grid;place-items:center;box-shadow:var(--shadow);cursor:pointer}
+  .iconbtn{width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface);display:grid;place-items:center;box-shadow:var(--shadow-ambient),var(--shadow-soft);cursor:pointer;transition:transform .15s ease}
   .iconbtn:hover{transform:translateY(-1px)}
   .iconbtn svg{width:18px;height:18px}
-  .icon-danger{border-color:#ffd1db;background:#fff6f8}
-  .icon-danger svg{stroke:#ff4d6d}
-  .icon-edit svg{stroke:#777}
-  .sch-group{margin-top:8px;border:1px dashed var(--college-border);border-radius:10px;padding:8px;background:rgba(255,255,255,.35)}
+  .icon-danger{border-color:#f4becb;background:#fff5f7}
+  .icon-danger svg{stroke:var(--status-danger)}
+  .icon-edit svg{stroke:var(--color-muted)}
+  .sch-group{margin-top:8px;border:1px dashed var(--card-college-border);border-radius:var(--radius-sm);padding:8px;background:rgba(255,255,255,.35)}
   .sch-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0}
-  .sch-chip{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--tag-border);background:#f5edf9;color:#666}
+  .sch-chip{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--tag-border);background:var(--tag-surface);color:var(--tag-ink)}
   .sch-date{font-size:12px}
-  .sch-date.urgent{color:var(--urgent);font-weight:800}
-  table{width:100%;border-collapse:collapse;font-size:14px;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
-  th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
-  thead th{color:var(--muted);font-weight:800;user-select:none;cursor:pointer;background:#f9f4fc}
-  tr:hover td{background:#faf7ff}
-  .modal{position:fixed;inset:0;background:rgba(30,18,49,.25);display:grid;place-items:center;z-index:99}
-  .panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow);max-width:900px;width:92vw}
+  .sch-date.urgent{color:var(--status-urgent);font-weight:800}
+  table{width:100%;border-collapse:collapse;font-size:14px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-ambient),var(--shadow-soft)}
+  th,td{padding:12px;border-bottom:1px solid var(--color-border);text-align:left;vertical-align:top}
+  thead th{color:var(--color-muted);font-weight:800;user-select:none;cursor:pointer;background:var(--color-surface-tint)}
+  tr:hover td{background:var(--color-surface-muted)}
+  .modal{position:fixed;inset:0;background:rgba(31,35,55,.25);display:grid;place-items:center;z-index:99}
+  .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-ambient),var(--shadow-soft);max-width:900px;width:92vw}
   .grid6{display:grid;gap:10px;grid-template-columns:repeat(6,1fr)}
   .grid2{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
   @media (max-width:1200px){.kanban{grid-template-columns:1fr 1fr 1fr}.grid6{grid-template-columns:repeat(3,1fr)}}
@@ -74,15 +105,15 @@
     .card{padding-bottom:92px}
   }
   .auth{display:flex;gap:8px;align-items:center}
-  .calendar{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-  .cal-dow{background:#f9f4fc;color:var(--muted);padding:10px;font-weight:800;text-align:center;border-bottom:1px solid var(--border)}
+  .calendar{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-ambient),var(--shadow-soft);overflow:hidden}
+  .cal-dow{background:var(--color-surface-tint);color:var(--color-muted);padding:10px;font-weight:800;text-align:center;border-bottom:1px solid var(--color-border)}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
-  .cal-cell{min-height:110px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px;position:relative}
+  .cal-cell{min-height:110px;border-right:1px solid var(--color-border);border-bottom:1px solid var(--color-border);padding:8px;position:relative;background:var(--color-surface)}
   .cal-cell:nth-child(7n){border-right:0}
-  .cal-date{font-size:12px;color:var(--muted);position:absolute;top:6px;right:8px}
-  .ev{display:block;margin-top:18px;font-size:12px;border-radius:8px;padding:6px 8px;border:1px solid var(--border)}
-  .ev.college{background:#efe7ff}
-  .ev.scholar{background:#ffe6ef}
+  .cal-date{font-size:12px;color:var(--color-muted);position:absolute;top:6px;right:8px}
+  .ev{display:block;margin-top:18px;font-size:12px;border-radius:var(--radius-sm);padding:6px 8px;border:1px solid var(--color-border)}
+  .ev.college{background:var(--card-college-bg)}
+  .ev.scholar{background:var(--card-scholar-bg)}
   .inactive{opacity:.55;filter:grayscale(.1)}
   .inactive .title{color:#5d5970}
   .inactive{border-style:dashed}
@@ -270,7 +301,7 @@
 <!-- Bulk Import -->
 <div id="bulkModal" class="modal hidden" role="dialog" aria-modal="true">
   <div class="panel">
-    <h3 style="margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted)">Bulk Import</h3>
+    <h3 style="margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-muted)">Bulk Import</h3>
     <p class="muted">Paste CSV/TSV with headers. Existing items remain.</p>
     <textarea id="bulkText" rows="10" placeholder="For colleges (headers):
 name,app,eaed,rd,status,notes
