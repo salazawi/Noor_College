@@ -108,10 +108,16 @@
   .grid2{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
   @media (max-width:1200px){.kanban{grid-template-columns:1fr 1fr 1fr}.grid6{grid-template-columns:repeat(3,1fr)}}
   @media (max-width:760px){
+    .masthead__inner{flex-direction:column;align-items:flex-start;gap:16px}
+    .masthead__tabs{justify-content:flex-start;width:100%}
+    .masthead__actions{width:100%}
+    .masthead__actions .dropdown summary{width:100%;justify-content:space-between}
+    .toolbar{flex-direction:column;align-items:stretch}
+    .toolbar__actions{width:100%;justify-content:space-between}
+    .toolbar__core{width:100%;justify-content:space-between}
+    .toolbar__core .btn{flex:1}
     .kanban{grid-template-columns:1fr}
     .grid6{grid-template-columns:1fr}
-    .tool-right{width:100%}
-    .card{padding-bottom:92px}
   }
   .auth{display:flex;gap:8px;align-items:center}
   .calendar{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-ambient),var(--shadow-soft);overflow:hidden}
@@ -126,22 +132,34 @@
   .inactive{opacity:.55;filter:grayscale(.1)}
   .inactive .title{color:#5d5970}
   .inactive{border-style:dashed}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-<header>
-  <div class="wrap row">
-    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· v6.4 Firebase Sync</span></div>
-    <nav id="tabs" class="spacer">
+<header class="masthead">
+  <div class="wrap masthead__inner">
+    <div class="masthead__brand">
+      <div class="logo">N</div>
+      <div>
+        <div class="brand-title">Noor’s Board</div>
+        <div class="brand-subtitle">College journey planner · v6.4 Firebase Sync</div>
+      </div>
+    </div>
+    <nav id="tabs" class="masthead__tabs" aria-label="Primary">
       <button class="tab active" data-tab="board">Board</button>
       <button class="tab" data-tab="table">Table</button>
       <button class="tab" data-tab="calendar">Calendar</button>
       <button class="tab" data-tab="notes">Notes</button>
     </nav>
-    <div class="auth">
-      <span id="userBadge" class="pill hidden"></span>
-      <button id="loginBtn" class="btn primary">Sign in with Google</button>
-      <button id="logoutBtn" class="btn hidden">Sign out</button>
+    <div class="masthead__actions">
+      <details class="dropdown">
+        <summary><span>Account</span><span class="overflow-icon" aria-hidden="true">⋮</span></summary>
+        <div class="dropdown-panel" role="menu">
+          <span id="userBadge" class="pill hidden"></span>
+          <button id="loginBtn" class="btn primary" role="menuitem">Sign in with Google</button>
+          <button id="logoutBtn" class="btn hidden" role="menuitem">Sign out</button>
+        </div>
+      </details>
     </div>
   </div>
 </header>
@@ -149,18 +167,25 @@
 <main>
   <section class="wrap">
     <div class="toolbar">
-      <div class="tool-left">
+      <div class="toolbar__info">
         <div class="pill">Cloud sync: <b id="syncState">offline</b></div>
         <label class="toggle"><input id="hideRemoved" type="checkbox"> Hide removed</label>
         <div id="firstSyncNote" class="muted hidden">First sign-in will ask if you want to <b>upload</b> your current data to the cloud or <b>pull</b> existing cloud data down.</div>
       </div>
-      <div class="tool-right">
-        <button id="exportBtn" class="btn">Export</button>
+      <div class="toolbar__actions">
+        <div class="toolbar__core">
+          <button id="addCollegeBtn" class="btn primary">+ College</button>
+          <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
+        </div>
+        <details class="toolbar__more">
+          <summary><span>More</span><span class="overflow-icon" aria-hidden="true">⋯</span></summary>
+          <div class="toolbar-menu" role="menu">
+            <button id="exportBtn" class="menu-item" role="menuitem">Export data</button>
+            <button id="importBtn" class="menu-item" role="menuitem">Import data</button>
+            <button id="seedBtn" class="menu-item" role="menuitem">Load Sample Data</button>
+          </div>
+        </details>
         <input type="file" id="importFile" class="hidden" accept="application/json">
-        <button id="importBtn" class="btn">Import</button>
-        <button id="seedBtn" class="btn green">Load Sample Data</button>
-        <button id="addCollegeBtn" class="btn primary">+ College</button>
-        <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
       </div>
     </div>
   </section>
@@ -561,6 +586,17 @@ function iconTrash(){
 }
 
 /* -------- Cards -------- */
+const STATUS_META = {
+  Considering: { label: 'Considering', chip: 'status-chip status-considering', progress: 'card-progress progress-considering', percent: 25 },
+  Applying:    { label: 'Applying',    chip: 'status-chip status-applying',    progress: 'card-progress progress-applying',    percent: 50 },
+  Submitted:   { label: 'Submitted',   chip: 'status-chip status-submitted',   progress: 'card-progress progress-submitted',   percent: 80 },
+  Decision:    { label: 'Decision',    chip: 'status-chip status-decision',    progress: 'card-progress progress-decision',    percent: 100 }
+};
+
+function statusMeta(status){
+  return STATUS_META[status] || STATUS_META.Considering;
+}
+
 function badgeInterview(rec){
   if(!rec.interview) return '';
   const d = rec.interviewDate ? ` (${fmt2(rec.interviewDate)})` : '';
@@ -582,23 +618,45 @@ function collegeCard(r, laneKey){
   }).join('');
   const badges = [badgeInterview(r), badgeRemoved(r, laneKey)].filter(Boolean).join(' ');
   const inactiveClass = (r.removed && (laneKey==='ConsideringEA' || laneKey==='ConsideringRD')) ? 'inactive' : '';
+  const status = r.status || 'Considering';
+  const meta = statusMeta(status);
+  const badgeBlock = badges ? `<div class="card-footnote">${badges}</div>` : '';
+  const progressBar = `<div class="${meta.progress}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${meta.percent}" aria-valuetext="${meta.label} progress ${meta.percent}%"><span style="width:${meta.percent}%"></span></div>`;
   return `<div class="card college ${inactiveClass}" draggable="true" data-type="college" data-id="${r.id}">
-    <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.app||'—'}</span>${badges? ' '+badges: ''}</div>
+    <div class="card-header">
+      <div class="title">${r.name||''}</div>
+      <span class="${meta.chip}">${meta.label}</span>
+    </div>
+    <div class="rowtiny"><span class="tag">${r.app||'—'}</span></div>
     <div class="rowtiny"><span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt2(r.eaed): '—'}</span><span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt2(r.rd): '—'}</span></div>
     ${schRows? `<div class="sch-group">${schRows}</div>` : ''}
-    <div class="actions-edit"><button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('college', ${r.id})">${iconPencil()}</button></div>
-    <div class="actions-del"><button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('college', ${r.id})">${iconTrash()}</button></div>
+    ${badgeBlock}
+    ${progressBar}
+    <div class="card-actions">
+      <button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('college', ${r.id})">${iconPencil()}</button>
+      <button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('college', ${r.id})">${iconTrash()}</button>
+    </div>
   </div>`;
 }
 function scholarCard(r, laneKey){
   const badges = [badgeInterview(r), badgeRemoved(r, laneKey)].filter(Boolean).join(' ');
   const inactiveClass = (r.removed && (laneKey==='ConsideringScholarship')) ? 'inactive' : '';
+  const status = r.status || 'Considering';
+  const meta = statusMeta(status);
+  const badgeBlock = badges ? `<div class="card-footnote">${badges}</div>` : '';
+  const progressBar = `<div class="${meta.progress}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${meta.percent}" aria-valuetext="${meta.label} progress ${meta.percent}%"><span style="width:${meta.percent}%"></span></div>`;
   return `<div class="card scholar ${inactiveClass}" draggable="true" data-type="scholar" data-id="${r.id}">
-    <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt2(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span>${badges? ' '+badges: ''}</div>
-    <div class="actions-edit"><button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('scholar', ${r.id})">${iconPencil()}</button></div>
-    <div class="actions-del"><button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('scholar', ${r.id})">${iconTrash()}</button></div>
+    <div class="card-header">
+      <div class="title">${r.name||''}</div>
+      <span class="${meta.chip}">${meta.label}</span>
+    </div>
+    <div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt2(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span></div>
+    ${badgeBlock}
+    ${progressBar}
+    <div class="card-actions">
+      <button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('scholar', ${r.id})">${iconPencil()}</button>
+      <button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('scholar', ${r.id})">${iconTrash()}</button>
+    </div>
   </div>`;
 }
 
