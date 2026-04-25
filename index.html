@@ -1,1046 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Noor’s College Board — v6.4 (In-lane Reorder + ID Fix)</title>
-<meta name="theme-color" content="#f7f8fc">
-<style>
-  :root{
-    --color-background:#f7f8fc;
-    --color-surface:#ffffff;
-    --color-surface-tint:#f1f3ff;
-    --color-surface-muted:#f4f6ff;
-    --color-ink:#1f2337;
-    --color-muted:#6b6f86;
-    --color-border:#dce1f3;
-    --shadow-soft:0 18px 44px rgba(31,35,55,.08);
-    --shadow-ambient:0 1px 0 rgba(31,37,89,.06);
-    --shadow-focus:0 0 0 3px rgba(91,112,206,.35);
-    --radius-sm:12px;
-    --radius-md:16px;
-    --radius-lg:20px;
-    --color-primary-strong:#4b5cc4;
-    --color-primary:#5b70ce;
-    --color-primary-contrast:#ffffff;
-    --color-secondary-strong:#5faeb3;
-    --color-secondary:#69b0b5;
-    --color-secondary-contrast:#0f2f2c;
-    --color-accent-strong:#e08fb0;
-    --color-accent:#f2a7c2;
-    --color-accent-contrast:#3d1c2a;
-    --lane-surface:#ffffff;
-    --lane-border:#dfe3f6;
-    --card-college-bg:#e4e7fb;
-    --card-college-border:#cbd2f6;
-    --card-scholar-bg:#f6e8f0;
-    --card-scholar-border:#e8cadc;
-    --tag-surface:#edeaf9;
-    --tag-border:#d8d4f0;
-    --tag-ink:#4d4f68;
-    --status-soon:#955719;
-    --status-urgent:#b03b49;
-    --status-danger:#9b1f36;
-    --status-soon-bg:#fff4e9;
-    --status-urgent-bg:#fff1f3;
-    --status-danger-bg:#ffe7ed;
-    --status-danger-border:#f4becb;
-  }
-  *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0;color:var(--color-ink);font-family:ui-sans-serif,system-ui,-apple-system,"SF Pro","Segoe UI",Roboto,Helvetica,Arial;background:var(--color-background)}
-  header{position:sticky;top:0;z-index:20;background:var(--color-surface);border-bottom:1px solid var(--color-border);box-shadow:var(--shadow-ambient)}
-  .wrap{max-width:1220px;margin:0 auto;padding:14px 16px}
-  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:12px;font-weight:900}
-  .logo{width:36px;height:36px;border-radius:var(--radius-sm);display:grid;place-items:center;background:linear-gradient(135deg,var(--color-primary-strong),var(--color-primary));color:var(--color-primary-contrast);font-weight:900;box-shadow:var(--shadow-ambient),var(--shadow-soft)}
-  nav{display:flex;gap:8px;flex-wrap:wrap}
-  .tab{appearance:none;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-ink);padding:9px 12px;border-radius:var(--radius-sm);cursor:pointer;font-weight:700;box-shadow:var(--shadow-ambient),var(--shadow-soft);transition:box-shadow .2s ease,transform .15s ease}
-  .tab.active{border-color:transparent;background:linear-gradient(var(--color-surface),var(--color-surface-tint))}
-  .tab:focus-visible{outline:none;box-shadow:var(--shadow-ambient),var(--shadow-soft),var(--shadow-focus)}
-  .spacer{flex:1}
-  .btn{appearance:none;border:1px solid var(--color-border);cursor:pointer;font-weight:800;border-radius:var(--radius-sm);padding:10px 14px;background:var(--color-surface);color:var(--color-ink);box-shadow:var(--shadow-ambient),var(--shadow-soft);white-space:nowrap;transition:transform .15s ease,box-shadow .2s ease}
-  .btn.primary{border-color:transparent;background:linear-gradient(135deg,var(--color-primary-strong),var(--color-primary));color:var(--color-primary-contrast)}
-  .btn.green{border-color:transparent;background:linear-gradient(135deg,var(--color-secondary-strong),var(--color-secondary));color:var(--color-secondary-contrast)}
-  .btn.pink{border-color:transparent;background:linear-gradient(135deg,var(--color-accent-strong),var(--color-accent));color:var(--color-accent-contrast)}
-  .btn:focus-visible{outline:none;box-shadow:var(--shadow-ambient),var(--shadow-soft),var(--shadow-focus)}
-  main .wrap{padding:18px 16px}.muted{color:var(--color-muted)}.hidden{display:none!important}
-  input,select,textarea{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--color-border);outline:none;background:var(--color-surface);color:var(--color-ink);font-size:16px;box-shadow:var(--shadow-ambient);transition:box-shadow .2s ease,border-color .2s ease}
-  input:focus-visible,select:focus-visible,textarea:focus-visible{border-color:var(--color-primary);box-shadow:var(--shadow-ambient),var(--shadow-focus)}
-  label{font-size:12px;color:var(--color-muted);font-weight:700;display:block;margin:6px 0 4px 0}
-  .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between}
-  .tool-left{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .tool-right{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .pill{padding:6px 10px;border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface);white-space:nowrap;box-shadow:var(--shadow-ambient)}
-  .toggle{display:flex;gap:8px;align-items:center;padding:8px 12px;border:1px solid var(--color-border);border-radius:999px;background:var(--color-surface);color:var(--color-muted);box-shadow:var(--shadow-ambient);transition:box-shadow .2s ease}
-  .toggle:focus-within{box-shadow:var(--shadow-ambient),var(--shadow-focus)}
-  .kanban{display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:flex-start}
-  .lane{background:var(--lane-surface);border:1px solid var(--lane-border);border-radius:var(--radius-lg);padding:12px;min-height:220px;box-shadow:var(--shadow-ambient),var(--shadow-soft)}
-  .lane h3{margin:0 0 8px 0;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-muted)}
-  .lane .count{font-weight:900;color:var(--color-primary)}.dropzone{min-height:160px}
-  .card{position:relative;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 12px 76px 12px;margin-bottom:12px;box-shadow:var(--shadow-ambient),var(--shadow-soft);cursor:grab;background:var(--color-surface)}
-  .card.college{background:var(--card-college-bg);border-color:var(--card-college-border)}.card.scholar{background:var(--card-scholar-bg);border-color:var(--card-scholar-border)}
-  .card.dragging{opacity:.75}.title{font-weight:900;margin-bottom:6px;padding-right:56px}
-  .rowtiny{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--color-muted);margin-top:4px}
-  .tag{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid var(--tag-border);background:var(--tag-surface);color:var(--tag-ink)}
-  .tag.badge{font-weight:800}
-  .dueSoon{border-color:var(--status-soon);color:var(--status-soon);background:var(--status-soon-bg)}.dueUrgent{border-color:var(--status-urgent);color:var(--status-urgent);background:var(--status-urgent-bg)}
-  .actions-edit{position:absolute;right:8px;top:8px}
-  .actions-del{position:absolute;right:8px;bottom:8px}
-  .iconbtn{width:36px;height:36px;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface);display:grid;place-items:center;box-shadow:var(--shadow-ambient),var(--shadow-soft);cursor:pointer;transition:transform .15s ease,box-shadow .2s ease}
-  .iconbtn:hover{transform:translateY(-1px)}
-  .iconbtn:focus-visible{outline:none;box-shadow:var(--shadow-ambient),var(--shadow-soft),var(--shadow-focus)}
-  .iconbtn svg{width:18px;height:18px}
-  .icon-danger{border-color:var(--status-danger-border);background:var(--status-danger-bg)}
-  .icon-danger svg{stroke:var(--status-danger)}
-  .icon-edit svg{stroke:var(--color-muted)}
-  .sch-group{margin-top:8px;border:1px dashed var(--card-college-border);border-radius:var(--radius-sm);padding:8px;background:rgba(255,255,255,.35)}
-  .sch-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0}
-  .sch-chip{font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid var(--tag-border);background:var(--tag-surface);color:var(--tag-ink)}
-  .sch-date{font-size:12px}
-  .sch-date.urgent{color:var(--status-urgent);font-weight:800}
-  table{width:100%;border-collapse:collapse;font-size:14px;background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;box-shadow:var(--shadow-ambient),var(--shadow-soft)}
-  th,td{padding:12px;border-bottom:1px solid var(--color-border);text-align:left;vertical-align:top}
-  thead th{color:var(--color-muted);font-weight:800;user-select:none;cursor:pointer;background:var(--color-surface-tint)}
-  tr:hover td{background:var(--color-surface-muted)}
-  .modal{position:fixed;inset:0;background:rgba(31,35,55,.25);display:grid;place-items:center;z-index:99}
-  .panel{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;box-shadow:var(--shadow-ambient),var(--shadow-soft);max-width:900px;width:92vw}
-  .grid6{display:grid;gap:10px;grid-template-columns:repeat(6,1fr)}
-  .grid2{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
-  @media (max-width:1200px){.kanban{grid-template-columns:1fr 1fr 1fr}.grid6{grid-template-columns:repeat(3,1fr)}}
-  @media (max-width:760px){
-    .kanban{grid-template-columns:1fr}
-    .grid6{grid-template-columns:1fr}
-    .tool-right{width:100%}
-    .card{padding-bottom:92px}
-  }
-  .auth{display:flex;gap:8px;align-items:center}
-  .calendar{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-ambient),var(--shadow-soft);overflow:hidden}
-  .cal-dow{background:var(--color-surface-tint);color:var(--color-muted);padding:10px;font-weight:800;text-align:center;border-bottom:1px solid var(--color-border)}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}
-  .cal-cell{min-height:110px;border-right:1px solid var(--color-border);border-bottom:1px solid var(--color-border);padding:8px;position:relative;background:var(--color-surface)}
-  .cal-cell:nth-child(7n){border-right:0}
-  .cal-date{font-size:12px;color:var(--color-muted);position:absolute;top:6px;right:8px}
-  .ev{display:block;margin-top:18px;font-size:12px;border-radius:var(--radius-sm);padding:6px 8px;border:1px solid var(--color-border)}
-  .ev.college{background:var(--card-college-bg)}
-  .ev.scholar{background:var(--card-scholar-bg)}
-  .inactive{opacity:.55;filter:grayscale(.1)}
-  .inactive .title{color:#5d5970}
-  .inactive{border-style:dashed}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pinnacle Neurology | Modern Brain & Spine Care</title>
+  <meta name="description" content="Compassionate, evidence-based neurology care for migraines, epilepsy, memory disorders, movement conditions, and more." />
+  <meta name="theme-color" content="#0f3d56" />
+  <style>
+    :root {
+      --bg: #f3f8fb;
+      --surface: #ffffff;
+      --surface-alt: #eaf4f8;
+      --ink: #123045;
+      --muted: #4f6e80;
+      --border: #c8dce8;
+      --primary: #0f3d56;
+      --primary-soft: #1e5f82;
+      --secondary: #2f7f8e;
+      --accent: #87c6d8;
+      --success: #1f6f5d;
+      --danger: #ac2f4e;
+      --radius-sm: 12px;
+      --radius-md: 18px;
+      --radius-lg: 26px;
+      --shadow: 0 18px 45px rgba(18, 48, 69, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    .container {
+      width: min(1120px, 92vw);
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .logo-wrap {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(145deg, var(--primary), var(--primary-soft));
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow);
+    }
+
+    .logo-wrap svg { width: 30px; height: 30px; }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 0;
+      padding: 0;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 11px 18px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform .15s ease, box-shadow .2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-soft));
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .btn.ghost {
+      border-color: var(--primary-soft);
+      color: var(--primary);
+      background: #fff;
+    }
+
+    .hero {
+      padding: 64px 0 48px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr .9fr;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .eyebrow {
+      color: var(--secondary);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      line-height: 1.16;
+      margin: 0 0 14px;
+    }
+
+    .lead {
+      font-size: 1.05rem;
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card h2 { margin-top: 0; font-size: 1.2rem; }
+
+    .quick-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .status {
+      margin-top: 16px;
+      background: var(--surface-alt);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      padding: 12px;
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    section { padding: 28px 0; }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 1.65rem;
+    }
+
+    .section-copy {
+      margin: 0 0 24px;
+      color: var(--muted);
+      max-width: 72ch;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+    }
+
+    .card h3 { margin: 0 0 8px; font-size: 1.1rem; }
+    .card p { margin: 0; color: var(--muted); }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .contact-box {
+      background: linear-gradient(160deg, var(--primary), var(--primary-soft));
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .contact-box a { color: #fff; font-weight: 700; }
+
+    footer {
+      margin-top: 28px;
+      border-top: 1px solid var(--border);
+      background: #fff;
+      padding: 22px 0 34px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .split,
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .nav { align-items: flex-start; }
+      nav ul { justify-content: flex-start; }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <div class="wrap row">
-    <div class="brand"><div class="logo">N</div> Noor’s Board <span class="muted">· v6.4 Firebase Sync</span></div>
-    <nav id="tabs" class="spacer">
-      <button class="tab active" data-tab="board">Board</button>
-      <button class="tab" data-tab="table">Table</button>
-      <button class="tab" data-tab="calendar">Calendar</button>
-      <button class="tab" data-tab="notes">Notes</button>
-    </nav>
-    <div class="auth">
-      <span id="userBadge" class="pill hidden"></span>
-      <button id="loginBtn" class="btn primary">Sign in with Google</button>
-      <button id="logoutBtn" class="btn hidden">Sign out</button>
-    </div>
-  </div>
-</header>
-
-<main>
-  <section class="wrap">
-    <div class="toolbar">
-      <div class="tool-left">
-        <div class="pill">Cloud sync: <b id="syncState">offline</b></div>
-        <label class="toggle"><input id="hideRemoved" type="checkbox"> Hide removed</label>
-        <div id="firstSyncNote" class="muted hidden">First sign-in will ask if you want to <b>upload</b> your current data to the cloud or <b>pull</b> existing cloud data down.</div>
+  <header>
+    <div class="container nav">
+      <div class="brand" aria-label="Pinnacle Neurology logo and name">
+        <div class="logo-wrap" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 45V19h20" stroke="#DFF2F8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="32" cy="32" r="26" stroke="#87C6D8" stroke-width="4"/>
+            <path d="M30 29c1.5-2 4.5-2 6 0 1.8 2.4.3 6-3 8" stroke="#DFF2F8" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          Pinnacle Neurology
+          <small>Brain • Spine • Nerve Care</small>
+        </div>
       </div>
-      <div class="tool-right">
-        <button id="exportBtn" class="btn">Export</button>
-        <input type="file" id="importFile" class="hidden" accept="application/json">
-        <button id="importBtn" class="btn">Import</button>
-        <button id="seedBtn" class="btn green">Load Sample Data</button>
-        <button id="addCollegeBtn" class="btn primary">+ College</button>
-        <button id="addScholarBtn" class="btn pink">+ Scholarship</button>
+
+      <nav aria-label="Primary navigation">
+        <ul>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#approach">Approach</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#contact" class="btn primary">Request Appointment</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Comprehensive Neurology Practice</div>
+          <h1>Confident diagnosis. Calm, compassionate care.</h1>
+          <p class="lead">A redesigned experience for a modern neurology clinic—grounded in trust, clarity, and evidence-based treatment for adults and older adults.</p>
+          <div class="hero-actions">
+            <a href="#contact" class="btn primary">Schedule Visit</a>
+            <a href="#services" class="btn ghost">Explore Services</a>
+          </div>
+        </div>
+
+        <aside class="hero-card">
+          <h2>Why this redesign works</h2>
+          <ul class="quick-list">
+            <li><strong>Palette:</strong> calming medical blues + reassuring teal accents.</li>
+            <li><strong>Typography:</strong> clear hierarchy for readability and trust.</li>
+            <li><strong>Logo concept:</strong> circular neural mark + “P” spine motif.</li>
+            <li><strong>CTAs:</strong> direct appointment and referral pathways.</li>
+          </ul>
+          <div class="status">Now accepting new patients and provider referrals.</div>
+        </aside>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- BOARD -->
-  <section id="board" class="wrap">
-    <div class="row" style="margin-bottom:10px">
-      <input id="filterBoard" placeholder="Filter… e.g., Duke, Common, Flinn, VFW">
-      <div class="spacer"></div>
-      <button class="btn" onclick="openBulk('college')">Bulk Import Colleges</button>
-      <button class="btn" onclick="openBulk('scholar')">Bulk Import Scholarships</button>
-    </div>
-    <div class="kanban" id="kanban"></div>
-  </section>
-
-  <!-- TABLE -->
-  <section id="table" class="wrap hidden">
-    <div class="row" style="margin-bottom:10px">
-      <input id="filterTable" placeholder="Filter…">
-      <div class="spacer"></div>
-      <button class="btn" onclick="openBulk('college')">Bulk Import Colleges</button>
-      <button class="btn" onclick="openBulk('scholar')">Bulk Import Scholarships</button>
-    </div>
-    <table id="collegeTable">
-      <thead>
-        <tr>
-          <th data-sort="type">Type</th>
-          <th data-sort="name">Name</th>
-          <th data-sort="app">App / Sponsor</th>
-          <th data-sort="eaed">EA/ED</th>
-          <th data-sort="rd">RD</th>
-          <th data-sort="scholar">Scholarships</th>
-          <th data-sort="sdue">Scholarship Due</th>
-          <th data-sort="due">Due</th>
-          <th data-sort="status">Status</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </section>
-
-  <!-- CALENDAR -->
-  <section id="calendar" class="wrap hidden">
-    <div class="row" style="margin-bottom:10px">
-      <div id="calTitle" style="font-weight:900"></div>
-      <div class="spacer"></div>
-      <button class="btn" id="prevMonth">◀︎</button>
-      <button class="btn" id="todayBtn">Today</button>
-      <button class="btn" id="nextMonth">▶︎</button>
-    </div>
-    <div class="calendar">
-      <div class="wrap" style="display:grid;grid-template-columns:repeat(7,1fr);gap:0">
-        <div class="cal-dow">Sun</div><div class="cal-dow">Mon</div><div class="cal-dow">Tue</div><div class="cal-dow">Wed</div><div class="cal-dow">Thu</div><div class="cal-dow">Fri</div><div class="cal-dow">Sat</div>
+    <section id="services">
+      <div class="container">
+        <h2 class="section-title">Key Neurology Services</h2>
+        <p class="section-copy">Designed around the most common patient journeys: symptom evaluation, chronic condition management, and coordinated care with primary care and specialty providers.</p>
+        <div class="cards">
+          <article class="card">
+            <h3>Headache & Migraine</h3>
+            <p>Personalized treatment plans, rescue protocols, and prevention strategies for episodic and chronic migraine.</p>
+          </article>
+          <article class="card">
+            <h3>Memory & Cognitive Health</h3>
+            <p>Early detection, diagnostic workups, and family-centered support for memory and cognitive concerns.</p>
+          </article>
+          <article class="card">
+            <h3>Movement & Nerve Disorders</h3>
+            <p>Evaluation and longitudinal management for tremor, neuropathy, dizziness, and gait instability.</p>
+          </article>
+        </div>
       </div>
-      <div class="cal-grid" id="calGrid"></div>
-    </div>
-  </section>
+    </section>
 
-  <!-- NOTES -->
-  <section id="notes" class="wrap hidden">
-    <label for="notesArea">Notes</label>
-    <textarea id="notesArea" rows="10" placeholder="Essay ideas, prompts, to-dos…"></textarea>
-    <div class="row" style="margin-top:10px">
-      <div class="muted">Autosaves; now also synced when signed in.</div>
-      <div class="spacer"></div>
-      <button class="btn" onclick="clearNotes()">Clear</button>
-    </div>
-  </section>
-</main>
-
-<!-- Modals -->
-<div id="editCollegeModal" class="modal hidden" role="dialog" aria-modal="true">
-  <div class="panel">
-    <div class="row" style="margin-bottom:10px">
-      <div style="font-weight:900">College</div>
-      <div class="spacer"></div>
-      <button class="btn" onclick="closeEdit('college')">Close</button>
-      <button class="btn primary" onclick="saveEdit('college')">Save</button>
-    </div>
-    <div class="grid6">
-      <div><label for="cName">College name</label><input id="cName" placeholder="e.g., Duke University"></div>
-      <div><label for="cApp">Application type</label><input id="cApp" placeholder="Common / UC / Coalition…"></div>
-      <div><label for="cEAED">EA/ED due</label><input id="cEAED" type="date"></div>
-      <div><label for="cRD">RD due</label><input id="cRD" type="date"></div>
-      <div><label for="cStatus">Status</label>
-        <select id="cStatus">
-          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Decision</option>
-        </select>
+    <section id="approach">
+      <div class="container split">
+        <article class="card">
+          <h2 class="section-title">Patient-centered clinical approach</h2>
+          <p class="section-copy">The interface emphasizes plain-language education, transparent next steps, and follow-up planning—matching the communication style patients need when facing neurologic uncertainty.</p>
+          <p class="section-copy">Recommended voice and brand tone: calm, precise, and hopeful. Avoid jargon-heavy headlines; favor human-centered action text such as “Understand your symptoms” and “Build a long-term plan.”</p>
+        </article>
+        <aside id="contact" class="contact-box">
+          <h2 style="margin-top:0">Contact & Appointments</h2>
+          <p>Phone: <a href="tel:+10000000000">(000) 000-0000</a></p>
+          <p>Fax: (000) 000-0001</p>
+          <p>Office hours: Mon–Fri, 8:30 AM – 5:00 PM</p>
+          <p><strong>Suggested CTA:</strong> “Book your neurology consultation”</p>
+          <a href="#" class="btn" style="background:#fff;color:var(--primary);margin-top:8px;">Start Appointment Request</a>
+        </aside>
       </div>
-      <div><label for="cNotes">Notes</label><input id="cNotes" placeholder="Notes"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Pinnacle Neurology. This concept refresh includes updated color system, brand mark direction, and patient-first layout strategy.
     </div>
-
-    <div style="margin-top:14px">
-      <div style="font-weight:900; margin-bottom:6px">College Scholarships</div>
-      <div id="cSchList"></div>
-      <button class="btn" style="margin-top:8px" onclick="addSchRow()">+ Add Scholarship</button>
-    </div>
-
-    <div class="grid2" style="margin-top:14px">
-      <div>
-        <label><input type="checkbox" id="cInterviewChk"> Interview</label>
-        <label for="cInterviewDate">Interview date (optional)</label>
-        <input id="cInterviewDate" type="date">
-      </div>
-      <div>
-        <label><input type="checkbox" id="cRemovedChk"> Removed from consideration</label>
-        <p class="muted" style="margin:6px 0 0 0">Only used in Considering lanes; you can hide removed cards with the toggle.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div id="editScholarModal" class="modal hidden" role="dialog" aria-modal="true">
-  <div class="panel">
-    <div class="row" style="margin-bottom:10px">
-      <div style="font-weight:900">Scholarship</div>
-      <div class="spacer"></div>
-      <button class="btn" onclick="closeEdit('scholar')">Close</button>
-      <button class="btn primary" onclick="saveEdit('scholar')">Save</button>
-    </div>
-    <div class="grid6">
-      <div><label for="sSponsor">Sponsor</label><input id="sSponsor" placeholder="e.g., Flinn Foundation"></div>
-      <div><label for="sName">Scholarship name</label><input id="sName" placeholder="e.g., Flinn Scholars"></div>
-      <div><label for="sDue">Due date</label><input id="sDue" type="date"></div>
-      <div><label for="sPrize">Top prize</label><input id="sPrize" placeholder="$25,000"></div>
-      <div><label for="sStatus">Status</label>
-        <select id="sStatus">
-          <option>Considering</option><option>Applying</option><option>Submitted</option><option>Decision</option>
-        </select>
-      </div>
-      <div><label for="sNotes">Notes</label><input id="sNotes" placeholder="Notes (optional)"></div>
-    </div>
-    <div class="grid2" style="margin-top:14px">
-      <div>
-        <label><input type="checkbox" id="sInterviewChk"> Interview</label>
-        <label for="sInterviewDate">Interview date (optional)</label>
-        <input id="sInterviewDate" type="date">
-      </div>
-      <div>
-        <label><input type="checkbox" id="sRemovedChk"> Removed from consideration</label>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Bulk Import -->
-<div id="bulkModal" class="modal hidden" role="dialog" aria-modal="true">
-  <div class="panel">
-    <h3 style="margin:0 0 8px 0; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--color-muted)">Bulk Import</h3>
-    <p class="muted">Paste CSV/TSV with headers. Existing items remain.</p>
-    <textarea id="bulkText" rows="10" placeholder="For colleges (headers):
-name,app,eaed,rd,status,notes
-For scholarships (headers):
-sponsor,name,due,prize,status,notes"></textarea>
-    <div class="row" style="margin-top:10px">
-      <div class="spacer"></div>
-      <button class="btn" onclick="closeBulk()">Cancel</button>
-      <button class="btn primary" onclick="doBulk()">Import</button>
-    </div>
-  </div>
-</div>
-
-<footer class="wrap muted" style="padding:28px 16px">Built for Noor with ❤️ — cloud sync when signed in; otherwise local-only.</footer>
-
-<script type="module">
-/* -------- Firebase SDK -------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-/* ====== Firebase config (your project) ====== */
-const firebaseConfig = {
-  apiKey: "AIzaSyDHf23XSZsHW0q07iCM7PvJnOqNvPwTmYU",
-  authDomain: "noor-college-list.firebaseapp.com",
-  projectId: "noor-college-list",
-  storageBucket: "noor-college-list.firebasestorage.app",
-  messagingSenderId: "622273585541",
-  appId: "1:622273585541:web:906be9a5e20842b9be64ec",
-  measurementId: "G-7W78102QWH"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-
-/* -------- Helpers & DOM refs -------- */
-const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
-const localKey='noor_board_v6_4';
-let currentUser=null, unsubscribeCloud=null, cloudDocRef=null, saveTimer=null;
-
-const editCollegeModal = document.getElementById('editCollegeModal');
-const editScholarModal = document.getElementById('editScholarModal');
-
-const cName    = document.getElementById('cName');
-const cApp     = document.getElementById('cApp');
-const cEAED    = document.getElementById('cEAED');
-const cRD      = document.getElementById('cRD');
-const cStatus  = document.getElementById('cStatus');
-const cNotes   = document.getElementById('cNotes');
-const cSchList = document.getElementById('cSchList');
-const cInterviewChk  = document.getElementById('cInterviewChk');
-const cInterviewDate = document.getElementById('cInterviewDate');
-const cRemovedChk    = document.getElementById('cRemovedChk');
-
-const sSponsor = document.getElementById('sSponsor');
-const sName    = document.getElementById('sName');
-const sDue     = document.getElementById('sDue');
-const sPrize   = document.getElementById('sPrize');
-const sStatus  = document.getElementById('sStatus');
-const sNotes   = document.getElementById('sNotes');
-const sInterviewChk  = document.getElementById('sInterviewChk');
-const sInterviewDate = document.getElementById('sInterviewDate');
-const sRemovedChk    = document.getElementById('sRemovedChk');
-
-const notesArea = document.getElementById('notesArea');
-const hideRemoved = document.getElementById('hideRemoved');
-
-/* -------- Data model (local + cloud) -------- */
-const model={
-  load(){return JSON.parse(localStorage.getItem(localKey) || '{}');},
-  save(d, pushCloud=true){
-    localStorage.setItem(localKey, JSON.stringify(d));
-    if(currentUser && pushCloud) debounceSaveCloud(d);
-  },
-  init(){
-    const d=model.load();
-    if(!d.seqC) d.seqC=100; if(!d.seqS) d.seqS=1000;
-    if(!Array.isArray(d.colleges)) d.colleges=seedColleges();
-    if(!Array.isArray(d.scholarships)) d.scholarships=seedScholars();
-    if(!d.notes) d.notes='';
-    if(!d.calendar){ d.calendar={year:new Date().getFullYear(), month:new Date().getMonth()}; }
-    if(!d.prefs) d.prefs={hideRemoved:false};
-    hideRemoved.checked = !!d.prefs.hideRemoved;
-
-    if (!d.order) d.order = Object.fromEntries(LANES.map(l => [l.key, []]));
-    ensureOrder(d);
-
-    repairIds(d);
-    ensureOrder(d);
-
-    model.save(d,false);
-  },
-  get(){return model.load();},
-  set(d){model.save(d);}
-};
-
-/* Sample data (preloaded) */
-function seedColleges(){
-  const names=['Duke University','Vanderbilt University','Rice University','University of Toronto','University of Notre Dame',
-    'UCLA','UC Berkeley','University of Virginia','UNC Chapel Hill','UC Santa Barbara','UC San Diego','Boston College',
-    'UT Austin','Boston University','William & Mary','Case Western Reserve','Wake Forest University','University of Washington',
-    'University of Arizona','Arizona State University','Swarthmore College','Washington and Lee University','Emory University',
-    'Georgia Tech','Carnegie Mellon University','Northwestern University','University of Chicago','Princeton University',
-    'Harvard University','Yale University','Columbia University','Cornell University','Brown University','Stanford University'];
-  const sample = names.map((n,i)=>({ id:101+i,name:n,app:'',eaed:'',rd:'',scholarships:[], status:i<8?'Considering':(i<16?'Applying':'Considering'), notes:'', interview:false, interviewDate:'', removed:false }));
-  sample[0].scholarships=[{name:'JB Duke',due:'2025-09-16'},{name:'AB Duke',due:'2025-10-15'},{name:'Robertson',due:'2025-11-18'}];
-  sample[1].scholarships=[{name:'A',due:'2025-08-27'},{name:'B',due:'2025-10-21'}];
-  return sample;
-}
-function seedScholars(){
-  return [
-    {id:1001, sponsor:'Flinn Foundation', name:'Flinn Scholars', due:'2025-09-29', prize:'Full ride', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false},
-    {id:1002, sponsor:'VFW', name:'Voice of Democracy', due:'2025-10-31', prize:'$35,000', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false},
-    {id:1003, sponsor:'Elks', name:'Most Valuable Student', due:'2025-11-12', prize:'$4k–$30k', status:'Considering', notes:'', interview:false, interviewDate:'', removed:false}
-  ];
-}
-
-/* -------- Ensure order arrays reflect current items -------- */
-function ensureOrder(d){
-  const idsC = new Set((d.colleges||[]).map(x => x.id));
-  const idsS = new Set((d.scholarships||[]).map(x => x.id));
-  for (const l of LANES) {
-    const isScholarLane = (l.key === 'ConsideringScholarship');
-    const keep = new Set(isScholarLane ? idsS : idsC);
-    d.order[l.key] = (d.order[l.key] || []).filter(id => keep.has(id));
-  }
-  const laneOfCollege = c => ( (c.status||'Considering')==='Considering'
-      ? (c.consideringLane || (c.eaed ? 'ConsideringEA' : 'ConsideringRD'))
-      : (c.status) );
-  (d.colleges||[]).forEach(c=>{
-    const lane = laneOfCollege(c);
-    const arr = (d.order[lane] ||= []);
-    if (!arr.includes(c.id)) arr.push(c.id);
-  });
-  (d.scholarships||[]).forEach(s=>{
-    const lane = (s.status||'Considering')==='Considering' ? 'ConsideringScholarship' : s.status;
-    const arr = (d.order[lane] ||= []);
-    if (!arr.includes(s.id)) arr.push(s.id);
-  });
-}
-function removeFromAllOrders(d, id){
-  for(const l of LANES) d.order[l.key] = (d.order[l.key]||[]).filter(x=>x!==id);
-}
-
-/* -------- ID repair -------- */
-function repairIds(d){
-  d.seqC = d.seqC || 100;
-  d.seqS = d.seqS || 1000;
-  const seenC = new Set();
-  d.colleges = (d.colleges || []).map(c=>{
-    if (!Number.isInteger(c.id) || seenC.has(c.id)) c.id = ++d.seqC;
-    seenC.add(c.id);
-    return c;
-  });
-  const seenS = new Set();
-  d.scholarships = (d.scholarships || []).map(s=>{
-    if (!Number.isInteger(s.id) || seenS.has(s.id)) s.id = ++d.seqS;
-    seenS.add(s.id);
-    return s;
-  });
-}
-
-/* -------- UI: tabs, filters, export/import -------- */
-$('#tabs').addEventListener('click', (e)=>{
-  if(!e.target.matches('.tab')) return;
-  $$('.tab').forEach(t=>t.classList.remove('active')); e.target.classList.add('active');
-  const tab=e.target.dataset.tab;
-  ['board','table','calendar','notes'].forEach(id=>$('#'+id).classList.toggle('hidden', id!==tab));
-  if(tab==='calendar') buildCalendar();
-  if(tab==='table') renderTable();
-});
-
-$('#exportBtn').addEventListener('click', ()=>{
-  const data=JSON.stringify(model.get(),null,2);
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
-  a.download='noor-board-v6.4.json'; a.click(); URL.revokeObjectURL(a.href);
-});
-$('#importBtn').addEventListener('click', ()=>$('#importFile').click());
-$('#importFile').addEventListener('change', async(e)=>{
-  const f=e.target.files[0]; if(!f) return;
-  try{
-    const text=await f.text(); 
-    const json=JSON.parse(text);
-    repairIds(json);
-    ensureOrder(json);
-    model.set(json); renderAll(); 
-    if(currentUser) debounceSaveCloud(json); 
-    alert('Imported!');
-  }catch{ alert('Invalid file.'); }
-});
-document.getElementById('seedBtn').addEventListener('click', ()=>{ 
-  if(confirm('Replace current data with sample data?')){ 
-    model.init(); renderAll(); if(currentUser) debounceSaveCloud(model.get()); 
-  }
-});
-hideRemoved.addEventListener('change', ()=>{ const d=model.get(); d.prefs=d.prefs||{}; d.prefs.hideRemoved=hideRemoved.checked; model.set(d); renderBoard(); });
-
-/* -------- Date helpers -------- */
-function pad2(v){return String(v).padStart(2,'0');}
-function normalizeDate(s){
-  if(!s) return '';
-  s = String(s).trim();
-  if(!s) return '';
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if(m){
-    let [_,mm,dd,yy] = m;
-    if(yy.length===2) yy = '20'+yy;
-    return `${yy}-${pad2(mm)}-${pad2(dd)}`;
-  }
-  const m2 = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-  if(m2){
-    const [_,y,mn,d]=m2;
-    return `${y}-${pad2(mn)}-${pad2(d)}`;
-  }
-  const d = new Date(s);
-  if(!isNaN(d)) return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-  return '';
-}
-function fmt2(d){ if(!d) return ''; const dt=new Date(d); if(isNaN(dt)) return ''; const yy=String(dt.getFullYear()).slice(-2); return `${pad2(dt.getMonth()+1)}/${pad2(dt.getDate())}/${yy}`; }
-function fmt(d){return d? new Date(d).toLocaleDateString():'';}
-function daysLeft(d){ if(!d) return null; return Math.ceil((new Date(d)-today())/86400000); }
-function today(){const t=new Date(); t.setHours(0,0,0,0); return t; }
-function compareDates(a,b){ return (a?new Date(a).getTime():0) - (b?new Date(b).getTime():0); }
-function dueClass(d){ const dl=daysLeft(d); if(dl==null) return ''; if(dl<=7) return 'dueUrgent'; if(dl<=21) return 'dueSoon'; return ''; }
-
-/* -------- Lanes -------- */
-const LANES=[
-  {key:'ConsideringEA',          label:'Considering — EA'},
-  {key:'ConsideringRD',          label:'Considering — RD'},
-  {key:'ConsideringScholarship', label:'Considering — Scholarship'},
-  {key:'Applying',               label:'Applying'},
-  {key:'Submitted',              label:'Submitted'},
-  {key:'Decision',               label:'Decision'}
-];
-
-/* -------- Icons -------- */
-function iconPencil(){
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-  </svg>`;
-}
-function iconTrash(){
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
-  </svg>`;
-}
-
-/* -------- Cards -------- */
-function badgeInterview(rec){
-  if(!rec.interview) return '';
-  const d = rec.interviewDate ? ` (${fmt2(rec.interviewDate)})` : '';
-  return `<span class="tag badge">Interview${d}</span>`;
-}
-function badgeRemoved(rec, laneKey){
-  if(!(rec.removed && (laneKey==='ConsideringEA' || laneKey==='ConsideringRD' || laneKey==='ConsideringScholarship'))) return '';
-  return `<span class="tag badge">Removed</span>`;
-}
-
-function collegeCard(r, laneKey){
-  const list = Array.isArray(r.scholarships) ? [...r.scholarships] : [];
-  list.sort((a,b)=> compareDates(a.due,b.due));
-  const schRows = list.map(s=>{
-    const name = s.name?.trim() || 'Scholarship';
-    const due  = s.due ? fmt2(s.due) : '';
-    const urgent = daysLeft(s.due)!=null && daysLeft(s.due)<=14;
-    return `<div class="sch-row"><span class="sch-chip">${name}</span><span class="sch-date ${urgent?'urgent':''}">${due}</span></div>`;
-  }).join('');
-  const badges = [badgeInterview(r), badgeRemoved(r, laneKey)].filter(Boolean).join(' ');
-  const inactiveClass = (r.removed && (laneKey==='ConsideringEA' || laneKey==='ConsideringRD')) ? 'inactive' : '';
-  return `<div class="card college ${inactiveClass}" draggable="true" data-type="college" data-id="${r.id}">
-    <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.app||'—'}</span>${badges? ' '+badges: ''}</div>
-    <div class="rowtiny"><span class="tag ${dueClass(r.eaed)}">EA/ED: ${r.eaed? fmt2(r.eaed): '—'}</span><span class="tag ${dueClass(r.rd)}">RD: ${r.rd? fmt2(r.rd): '—'}</span></div>
-    ${schRows? `<div class="sch-group">${schRows}</div>` : ''}
-    <div class="actions-edit"><button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('college', ${r.id})">${iconPencil()}</button></div>
-    <div class="actions-del"><button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('college', ${r.id})">${iconTrash()}</button></div>
-  </div>`;
-}
-function scholarCard(r, laneKey){
-  const badges = [badgeInterview(r), badgeRemoved(r, laneKey)].filter(Boolean).join(' ');
-  const inactiveClass = (r.removed && (laneKey==='ConsideringScholarship')) ? 'inactive' : '';
-  return `<div class="card scholar ${inactiveClass}" draggable="true" data-type="scholar" data-id="${r.id}">
-    <div class="title">${r.name||''}</div>
-    <div class="rowtiny"><span class="tag">${r.sponsor||'—'}</span><span class="tag ${dueClass(r.due)}">Due: ${r.due? fmt2(r.due): '—'}</span><span class="tag">${r.prize||'—'}</span>${badges? ' '+badges: ''}</div>
-    <div class="actions-edit"><button class="iconbtn icon-edit" title="Edit" aria-label="Edit" onclick="openEdit('scholar', ${r.id})">${iconPencil()}</button></div>
-    <div class="actions-del"><button class="iconbtn icon-danger" title="Delete" aria-label="Delete" onclick="delRow('scholar', ${r.id})">${iconTrash()}</button></div>
-  </div>`;
-}
-
-function matchesFilter(rec, q){
-  if(!q) return true;
-  q=q.toLowerCase();
-  return rec.filter(Boolean).some(v=>(''+v).toLowerCase().includes(q));
-}
-
-/* -------- BOARD RENDER: ordered by d.order[...] and supports in-lane reordering -------- */
-function renderBoard(){
-  const d=model.get(); const q=($('#filterBoard').value||'').toLowerCase().trim();
-  const hide = !!(d.prefs && d.prefs.hideRemoved);
-
-  // init order map if missing
-  if(!d.order){ d.order = Object.fromEntries(LANES.map(l=>[l.key, []])); }
-
-  const laneCardsHTML = Object.fromEntries(LANES.map(l=>[l.key,{}]));
-
-  d.colleges.forEach(r=>{
-    const status=r.status||'Considering';
-    const laneKey = (status==='Considering')? (r.consideringLane || (r.eaed ? 'ConsideringEA' : 'ConsideringRD')) : status;
-    const schNames=(Array.isArray(r.scholarships)? r.scholarships.map(s=>s.name):[]);
-    const rec=[r.name,r.app,status,r.notes,...schNames];
-    if(!matchesFilter(rec,q)) return;
-    if(hide && ((laneKey==='ConsideringEA'||laneKey==='ConsideringRD')) && r.removed) return;
-    laneCardsHTML[laneKey][r.id] = collegeCard(r, laneKey);
-  });
-
-  d.scholarships.forEach(r=>{
-    const status=r.status||'Considering';
-    const laneKey = (status==='Considering')? 'ConsideringScholarship' : status;
-    const rec=[r.name,r.sponsor,r.prize,status,r.notes];
-    if(!matchesFilter(rec,q)) return;
-    if(hide && (laneKey==='ConsideringScholarship') && r.removed) return;
-    laneCardsHTML[laneKey][r.id] = scholarCard(r, laneKey);
-  });
-
-  // ensure each lane's order contains only existing IDs
-  for(const l of LANES){
-    const map = laneCardsHTML[l.key];
-    const ids = Object.keys(map).map(n=>+n);
-    d.order[l.key] = (d.order[l.key]||[]).filter(id=>ids.includes(id));
-    // append any new ids at the end
-    ids.forEach(id=>{ if(!d.order[l.key].includes(id)) d.order[l.key].push(id); });
-  }
-  model.set(d,false);
-
-  const html = LANES.map(l=>{
-    const map = laneCardsHTML[l.key];
-    const idsInOrder = d.order[l.key]||[];
-    const items = idsInOrder.map(id=>map[id]).filter(Boolean).join('') || '<div class="muted" style="padding:8px">No items</div>';
-    return `<div class="lane" data-lane="${l.key}">
-      <h3>${l.label} <span class="count">(${idsInOrder.filter(id=>map[id]).length})</span></h3>
-      <div class="dropzone" data-zone="${l.key}">${items}</div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('kanban').innerHTML = html;
-  enableDnD();
-}
-
-function enableDnD(){
-  $$('.card').forEach(c=>{
-    c.addEventListener('dragstart', e=>{ 
-      c.classList.add('dragging'); 
-      e.dataTransfer.setData('text/plain', JSON.stringify({type:c.dataset.type, id:+c.dataset.id})); 
-    });
-    c.addEventListener('dragend', ()=> c.classList.remove('dragging'));
-  });
-
-  $$('.dropzone').forEach(z=>{
-    z.addEventListener('dragover', e=> e.preventDefault());
-    z.addEventListener('drop', e=>{
-      e.preventDefault();
-      const payload = JSON.parse(e.dataTransfer.getData('text/plain')||'{}'); 
-      if(!payload.id) return;
-      const destLane = z.dataset.zone;
-      const after = getDragAfterElement(z, e.clientY);
-      const domCards = Array.from(z.querySelectorAll('.card:not(.dragging)'));
-      let destIdx = (after ? domCards.indexOf(after) + 1 : 0);
-      applyMove(payload.type, payload.id, destLane, destIdx);
-    });
-  });
-}
-
-function getDragAfterElement(container, y){
-  const els = [...container.querySelectorAll('.card:not(.dragging)')];
-  let closest = {offset: Number.NEGATIVE_INFINITY, element: null};
-  for(const child of els){
-    const box = child.getBoundingClientRect();
-    const offset = y - box.top - box.height/2;
-    if(offset > 0 && offset < box.height && offset > closest.offset){
-      closest = {offset, element: child};
-    }
-  }
-  return closest.element;
-}
-
-function laneToStatus(type, laneKey){
-  if(laneKey==='ConsideringEA' || laneKey==='ConsideringRD' || laneKey==='ConsideringScholarship') return 'Considering';
-  return laneKey;
-}
-
-function applyMove(type, id, destLane, destIdx){
-  const d = model.get();
-  // remove id from every lane's order
-  for(const l of LANES){
-    d.order[l.key] = (d.order[l.key]||[]).filter(x=>x!==id);
-  }
-
-  const toStatus = laneToStatus(type, destLane);
-  if(type==='college'){
-    const i=d.colleges.findIndex(x=>x.id===id); if(i<0) return;
-    d.colleges[i].status = toStatus;
-    if(toStatus==='Considering' && (destLane==='ConsideringEA' || destLane==='ConsideringRD')){
-      d.colleges[i].consideringLane = destLane;
-    }else{
-      delete d.colleges[i].consideringLane;
-    }
-  }else{
-    const i=d.scholarships.findIndex(x=>x.id===id); if(i<0) return;
-    d.scholarships[i].status = toStatus;
-  }
-
-  const arr = d.order[destLane] || (d.order[destLane]=[]);
-  if(destIdx < 0 || destIdx > arr.length) destIdx = arr.length;
-  arr.splice(destIdx, 0, id);
-
-  model.set(d);
-  renderBoard(); renderTable(); buildCalendar();
-}
-
-/* -------- Table -------- */
-function renderTable(sortKey, asc=true){
-  const d=model.get(); const q=($('#filterTable').value||'').toLowerCase().trim();
-  let rows=[
-    ...d.colleges.map(c=>{
-      const schList = (Array.isArray(c.scholarships)&&c.scholarships.length)?
-        c.scholarships.map(s=>`${s.name||'Scholarship'}${s.due?` (${fmt2(s.due)})`:''}`).join(' · ') : '';
-      const firstSchDue = (Array.isArray(c.scholarships)&&c.scholarships[0]?.due) ? c.scholarships[0].due : '';
-      return {type:'College',name:c.name,app:c.app,eaed:c.eaed,rd:c.rd,scholar:schList,sdue:firstSchDue,due:'',status:c.status,_id:c.id,_t:'college',notes:c.notes};
-    }),
-    ...d.scholarships.map(s=>({type:'Scholarship',name:s.name,app:s.sponsor,eaed:'',rd:'',scholar:'',sdue:'',due:s.due,status:s.status,_id:s.id,_t:'scholar',prize:s.prize,notes:s.notes}))
-  ];
-  if(sortKey){
-    rows.sort((a,b)=>{
-      if(['eaed','rd','sdue','due'].includes(sortKey)) return asc? compareDates(a[sortKey],b[sortKey]) : compareDates(b[sortKey],a[sortKey]);
-      return asc? (''+(a[sortKey]||'')).localeCompare(''+(b[sortKey]||'')) : (''+(b[sortKey]||'')).localeCompare(''+(a[sortKey]||'')); 
-    });
-  }
-  rows = rows.filter(r=>{
-    const rec = r.type==='College'
-      ? [r.name,r.app,r.scholar,r.status,r.notes]
-      : [r.name,r.app,r.prize,r.status,r.notes];
-    return matchesFilter(rec,q);
-  });
-  document.querySelector('#collegeTable tbody').innerHTML = rows.map(r=>`
-    <tr>
-      <td>${r.type}</td>
-      <td>${r.name||''}</td>
-      <td>${r.app||''}</td>
-      <td>${r.eaed?fmt2(r.eaed):''}</td>
-      <td>${r.rd?fmt2(r.rd):''}</td>
-      <td>${r.scholar||''}</td>
-      <td>${r.sdue?fmt2(r.sdue):''}</td>
-      <td>${r.due?fmt2(r.due):''}</td>
-      <td>${r.status||''}</td>
-      <td><button class="btn" onclick="openEdit('${r._t}', ${r._id})">Edit</button> <button class="btn" onclick="delRow('${r._t}', ${r._id})">Delete</button></td>
-    </tr>
-  `).join('') || `<tr><td colspan="10" class="muted">No items match your filter.</td></tr>`;
-}
-$$('#collegeTable th[data-sort]').forEach(th=>{ let asc=true; th.addEventListener('click', ()=>{ renderTable(th.dataset.sort, asc); asc=!asc; }); });
-$('#filterTable').addEventListener('input', ()=>renderTable());
-$('#filterBoard').addEventListener('input', ()=>renderBoard());
-
-/* -------- Calendar -------- */
-let calState=null;
-function buildCalendar(){
-  const d=model.get();
-  if(!calState) calState={...d.calendar}; else d.calendar=calState, model.set(d);
-  const {year, month} = calState;
-  const grid = document.getElementById('calGrid'); const title = document.getElementById('calTitle');
-  const monthStart = new Date(year, month, 1); const monthEnd = new Date(year, month+1, 0);
-  title.textContent = monthStart.toLocaleDateString(undefined, {month:'long', year:'numeric'});
-  grid.innerHTML = '';
-  const startOffset = monthStart.getDay();
-  for(let i=0;i<startOffset;i++){ grid.appendChild(cell('')); }
-  for(let day=1; day<=monthEnd.getDate(); day++){
-    const dateISO=new Date(year,month,day).toISOString().slice(0,10);
-    const el=cell(day);
-    const add=(type,label)=>{ const s=document.createElement('span'); s.className='ev '+type; s.innerHTML='<b>'+label+'</b>'; el.appendChild(s); };
-    const dta=model.get();
-    dta.colleges.forEach(c=>{
-      if(c.eaed===dateISO) add('college', `${c.name} (EA/ED)`);
-      if(c.rd===dateISO) add('college', `${c.name} (RD)`);
-      if(Array.isArray(c.scholarships)){
-        c.scholarships.forEach(s=>{ if(s.due===dateISO) add('college', `${c.name}: ${s.name}`); });
-      }
-      if(c.interview && c.interviewDate===dateISO) add('college', `${c.name} (Interview)`);
-    });
-    dta.scholarships.forEach(s=>{
-      if(s.due===dateISO) add('scholar', `${s.sponsor}: ${s.name}`);
-      if(s.interview && s.interviewDate===dateISO) add('scholar', `${s.name} (Interview)`);
-    });
-    grid.appendChild(el);
-  }
-  function cell(day){ const d=document.createElement('div'); d.className='cal-cell'; d.innerHTML = day? `<div class="cal-date">${day}</div>`: ''; return d; }
-}
-document.getElementById('prevMonth').onclick = ()=>{ calState.month--; if(calState.month<0){calState.month=11; calState.year--; } buildCalendar(); };
-document.getElementById('nextMonth').onclick = ()=>{ calState.month++; if(calState.month>11){calState.month=0; calState.year++; } buildCalendar(); };
-document.getElementById('todayBtn').onclick = ()=>{ const t=new Date(); calState.year=t.getFullYear(); calState.month=t.getMonth(); buildCalendar(); };
-
-/* -------- CRUD + Modals -------- */
-let editingType=null, editingId=null;
-document.getElementById('addCollegeBtn').addEventListener('click', ()=>openEdit('college', null));
-document.getElementById('addScholarBtn').addEventListener('click', ()=>openEdit('scholar', null));
-
-function rowHTML(name='', due=''){
-  return `<div class="mini-row">
-    <input class="sch-name" placeholder="Scholarship name" value="${name?name.replace(/"/g,'&quot;'):''}">
-    <input class="sch-due" type="date" value="${due||''}">
-    <button class="btn" style="padding:6px 10px" onclick="this.parentElement.remove()">Remove</button>
-  </div>`;
-}
-function renderSchRows(list){
-  cSchList.innerHTML = (list && list.length) ? list.map(s=>rowHTML(s.name||'', s.due||'')).join('') : '';
-}
-function addSchRow(){ cSchList.insertAdjacentHTML('beforeend', rowHTML()); }
-
-function openEdit(type, id){
-  editingType=type; editingId=id; const d=model.get();
-  if(type==='college'){
-    const r = id==null ? {name:'',app:'',eaed:'',rd:'',scholarships:[],status:'Considering',notes:'',interview:false,interviewDate:'',removed:false} : d.colleges.find(x=>x.id===id);
-    cName.value=r.name||''; cApp.value=r.app||''; cEAED.value=r.eaed||''; cRD.value=r.rd||''; cStatus.value=r.status||'Considering'; cNotes.value=r.notes||'';
-    cInterviewChk.checked=!!r.interview; cInterviewDate.value=r.interviewDate||''; cRemovedChk.checked=!!r.removed;
-    renderSchRows(Array.isArray(r.scholarships)? r.scholarships : []);
-    editCollegeModal.classList.remove('hidden');
-  }else{
-    const r = id==null ? {sponsor:'',name:'',due:'',prize:'',status:'Considering',notes:'',interview:false,interviewDate:'',removed:false} : d.scholarships.find(x=>x.id===id);
-    if(!r){ alert('Could not find this scholarship. IDs were repaired — please try again.'); return; }
-    sSponsor.value=r.sponsor||''; sName.value=r.name||''; sDue.value=r.due||''; sPrize.value=r.prize||''; sStatus.value=r.status||'Considering'; sNotes.value=r.notes||'';
-    sInterviewChk.checked=!!r.interview; sInterviewDate.value=r.interviewDate||''; sRemovedChk.checked=!!r.removed;
-    editScholarModal.classList.remove('hidden');
-  }
-}
-function closeEdit(type){ (type==='college'?editCollegeModal:editScholarModal).classList.add('hidden'); }
-
-function collectSchRows(){
-  return Array.from(cSchList.querySelectorAll('.mini-row')).map(row=>{
-    const name = row.querySelector('.sch-name').value.trim();
-    const due  = normalizeDate(row.querySelector('.sch-due').value);
-    if(!name && !due) return null;
-    return {name: name||'Scholarship', due};
-  }).filter(Boolean);
-}
-
-function saveEdit(type){
-  const d=model.get();
-  if(type==='college'){
-    const obj={
-      name:cName.value.trim(), app:cApp.value.trim(),
-      eaed: normalizeDate(cEAED.value), rd: normalizeDate(cRD.value),
-      scholarships: collectSchRows(),
-      status:cStatus.value, notes:cNotes.value.trim(),
-      interview: !!cInterviewChk.checked,
-      interviewDate: normalizeDate(cInterviewDate.value),
-      removed: !!cRemovedChk.checked
-    };
-    if(!obj.name){ alert('College name is required.'); return; }
-    if(editingId==null){ 
-      obj.id=++d.seqC; 
-      d.colleges.push(obj); 
-      const lane = (obj.status==='Considering') ? (obj.eaed ? 'ConsideringEA' : 'ConsideringRD') : obj.status;
-      (d.order[lane] ||= []).push(obj.id);
-    } else { 
-      const i=d.colleges.findIndex(x=>x.id===editingId); 
-      if(i>=0){ 
-        d.colleges[i]=Object.assign({id:editingId}, obj); 
-        // reinsert into lane order
-        for(const l of LANES){ d.order[l.key] = (d.order[l.key]||[]).filter(x=>x!==editingId); }
-        const lane = (obj.status==='Considering') ? (obj.eaed ? 'ConsideringEA' : 'ConsideringRD') : obj.status;
-        const arr = (d.order[lane] ||= []);
-        if (!arr.includes(editingId)) arr.push(editingId);
-      }
-    }
-  }else{
-    const obj={
-      sponsor:sSponsor.value.trim(), name:sName.value.trim(),
-      due: normalizeDate(sDue.value), prize:sPrize.value.trim(),
-      status:sStatus.value, notes:sNotes.value.trim(),
-      interview: !!sInterviewChk.checked,
-      interviewDate: normalizeDate(sInterviewDate.value),
-      removed: !!sRemovedChk.checked
-    };
-    if(!obj.name){ alert('Scholarship name is required.'); return; }
-    if(editingId==null){ 
-      obj.id=++d.seqS; 
-      d.scholarships.push(obj); 
-      const lane = (obj.status==='Considering') ? 'ConsideringScholarship' : obj.status;
-      (d.order[lane] ||= []).push(obj.id);
-    } else { 
-      const i=d.scholarships.findIndex(x=>x.id===editingId); 
-      if(i>=0){ 
-        d.scholarships[i]=Object.assign({id:editingId}, obj); 
-        for(const l of LANES){ d.order[l.key] = (d.order[l.key]||[]).filter(x=>x!==editingId); }
-        const lane = (obj.status==='Considering') ? 'ConsideringScholarship' : obj.status;
-        const arr = (d.order[lane] ||= []);
-        if (!arr.includes(editingId)) arr.push(editingId);
-      }
-    }
-  }
-  model.set(d); closeEdit(type); renderAll();
-}
-function delRow(type,id){
-  const d=model.get();
-  for(const l of LANES){ d.order[l.key] = (d.order[l.key]||[]).filter(x=>x!==id); }
-  if(type==='college'){ const i=d.colleges.findIndex(x=>x.id===id); if(i>=0) d.colleges.splice(i,1); }
-  else { const i=d.scholarships.findIndex(x=>x.id===id); if(i>=0) d.scholarships.splice(i,1); }
-  model.set(d); renderAll();
-}
-
-/* -------- Bulk Import -------- */
-let bulkTarget='college';
-function openBulk(target){ bulkTarget=target||'college'; document.getElementById('bulkModal').classList.remove('hidden'); }
-function closeBulk(){ document.getElementById('bulkModal').classList.add('hidden'); document.getElementById('bulkText').value=''; }
-function doBulk(){
-  const raw=document.getElementById('bulkText').value.trim(); if(!raw){ closeBulk(); return; }
-  const lines=raw.split(/\r?\n/).filter(Boolean);
-  const header=lines[0].split(/\t|,/).map(h=>h.trim().toLowerCase());
-  const dataLines=(header.length>1)? lines.slice(1):lines;
-  const rows=dataLines.map(line=>{ const cols=line.split(/\t|,/).map(x=>x.trim()); const o={}; cols.forEach((c,i)=> o[header[i]||('col'+i)]=c); return o;});
-  const d=model.get();
-  if(bulkTarget==='college'){
-    rows.forEach(o=>{
-      const obj={
-        id: ++d.seqC,
-        name:o.name||o.col0||'',
-        app:o.app||o['application type']||'',
-        eaed: normalizeDate(o.eaed||o['ea/ed']||o['eaed']||''),
-        rd:   normalizeDate(o.rd||o['rd']||o['rd due']||''),
-        scholarships: [], status:o.status||'Considering', notes:o.notes||'',
-        interview:false, interviewDate:'', removed:false
-      };
-      d.colleges.push(obj);
-      const lane = (obj.status==='Considering') ? (obj.eaed ? 'ConsideringEA' : 'ConsideringRD') : obj.status;
-      (d.order[lane] ||= []).push(obj.id);
-    });
-  }else{
-    rows.forEach(o=>{
-      const obj={
-        id: ++d.seqS,
-        sponsor:o.sponsor||o.col0||'',
-        name:o.name||o['scholarship name']||o.col1||'',
-        due: normalizeDate(o.due||o['due date']||''),
-        prize:o.prize||o['top prize']||'',
-        status:o.status||'Considering', notes:o.notes||'',
-        interview:false, interviewDate:'', removed:false
-      };
-      d.scholarships.push(obj);
-      const lane = (obj.status==='Considering') ? 'ConsideringScholarship' : obj.status;
-      (d.order[lane] ||= []).push(obj.id);
-    });
-  }
-
-  repairIds(d);
-  ensureOrder(d);
-
-  model.set(d); renderAll(); closeBulk();
-}
-
-/* -------- Notes -------- */
-function clearNotes(){ if(confirm('Clear notes?')){ const d=model.get(); d.notes=''; model.set(d); renderNotes(); } }
-function renderNotes(){ const d=model.get(); notesArea.value=d.notes||''; }
-notesArea.addEventListener('input', ()=>{ const d=model.get(); d.notes=notesArea.value; model.set(d); });
-
-/* -------- Render All -------- */
-function renderAll(){ renderBoard(); renderTable(); renderNotes(); if(document.querySelector('.tab.active')?.dataset.tab==='calendar') buildCalendar(); }
-model.init(); renderAll();
-
-/* -------- Auth + Firestore sync -------- */
-const userBadge=document.getElementById('userBadge'), loginBtn=document.getElementById('loginBtn'), logoutBtn=document.getElementById('logoutBtn'), syncState=document.getElementById('syncState'), firstSyncNote=document.getElementById('firstSyncNote');
-loginBtn.onclick = async()=>{ try{ await signInWithPopup(auth, new GoogleAuthProvider()); }catch(e){ alert('Login failed: '+e.message); } };
-logoutBtn.onclick = ()=> signOut(auth);
-
-onAuthStateChanged(auth, async(user)=>{
-  currentUser=user||null;
-  if(!user){
-    userBadge.classList.add('hidden'); logoutBtn.classList.add('hidden'); loginBtn.classList.remove('hidden');
-    syncState.textContent='offline';
-    if(unsubscribeCloud) unsubscribeCloud(), unsubscribeCloud=null;
-    cloudDocRef=null;
-    return;
-  }
-  userBadge.textContent = user.displayName || user.email || 'Signed in';
-  userBadge.classList.remove('hidden'); logoutBtn.classList.remove('hidden'); loginBtn.classList.add('hidden');
-  firstSyncNote.classList.remove('hidden');
-  syncState.textContent='connecting…';
-
-  cloudDocRef = doc(db, 'users', user.uid, 'boards', 'default');
-
-  const snap = await getDoc(cloudDocRef);
-  if(!snap.exists()){
-    if(confirm('No cloud data found. Upload your current local board to the cloud now?')){
-      await setDoc(cloudDocRef, model.get());
-      syncState.textContent='synced (uploaded)';
-    }else{
-      syncState.textContent='local only';
-    }
-  }else{
-    if(confirm('Cloud data exists. Replace your local board with cloud data? (OK = pull, Cancel = keep local)')){
-      const data = snap.data();
-      localStorage.setItem(localKey, JSON.stringify(data)); renderAll();
-      syncState.textContent='synced (downloaded)';
-    }else{
-      syncState.textContent='synced (will overwrite cloud on change)';
-    }
-  }
-
-  if(unsubscribeCloud) unsubscribeCloud();
-  unsubscribeCloud = onSnapshot(cloudDocRef, (docSnap)=>{
-    if(!docSnap.exists()) return;
-    const local = model.get(); const remote = docSnap.data();
-    if(JSON.stringify(local)!==JSON.stringify(remote)){
-      localStorage.setItem(localKey, JSON.stringify(remote)); renderAll();
-      syncState.textContent='synced (remote update)';
-    }
-  });
-});
-
-function debounceSaveCloud(data){
-  if(!cloudDocRef) return;
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async()=>{
-    try{ await setDoc(cloudDocRef, data); syncState.textContent='synced'; }
-    catch(e){ syncState.textContent='error'; console.error('Firestore save error:', e); }
-  }, 400);
-}
-
-/* -------- expose functions for inline onclick -------- */
-Object.assign(window, { openEdit, closeEdit, saveEdit, delRow, addSchRow, openBulk, closeBulk, doBulk });
-
-</script>
+  </footer>
 </body>
 </html>
